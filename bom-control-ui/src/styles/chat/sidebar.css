@@ -1,0 +1,181 @@
+/* Split View Layout (Claude-style) */
+.chat-split-container {
+  display: flex;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.chat-main {
+  min-width: 400px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Smooth transition when sidebar opens/closes */
+  transition: flex 250ms ease-out;
+  /* In normal mode, constrain width and center */
+  max-width: 68%;
+  margin: 0 auto;
+}
+
+/* When split panel is open, content within left panel (Claude-style) */
+.chat-split-container--open .chat-main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* Thread takes full width for scrollbar positioning */
+  justify-content: flex-start;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Thread in split mode - full width, scrollbar at edge */
+.chat-split-container--open .chat-main .chat-thread {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Message groups centered within thread at 68% width */
+.chat-split-container--open .chat-main .chat-thread .chat-group {
+  width: 68%;
+  max-width: 68%;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box;
+}
+
+/* Composer in split mode - aligned with chat-group (same 68% width) */
+.chat-split-container--open .chat-main .chat-composer.claude-style {
+  width: 68% !important;
+  max-width: 68% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* Queue aligned same as composer */
+.chat-split-container--open .chat-main .chat-queue {
+  width: 68% !important;
+  max-width: 68% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box;
+}
+.chat-sidebar {
+  flex: 1 1 45%; /* Take 45% of space - closer to Claude style */
+  min-width: 350px;
+  max-width: 55%;
+  border-left: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slide-in 200ms ease-out;
+  position: relative;
+  background: var(--bg);
+}
+
+/* Thin hairline divider - Anthropic style */
+.chat-sidebar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-subtle);
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Sidebar Panel */
+.sidebar-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+}
+
+/* Smaller close button for sidebar */
+.sidebar-header .btn {
+  padding: 4px 8px;
+  font-size: 14px;
+  min-width: auto;
+  line-height: 1;
+}
+
+.sidebar-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.sidebar-markdown {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.sidebar-markdown pre {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.sidebar-markdown code {
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+/* Mobile: Full-screen modal */
+@media (max-width: 768px) {
+  .chat-split-container--open {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+  }
+
+  .chat-split-container--open .chat-main {
+    display: none; /* Hide chat on mobile when sidebar open */
+  }
+
+  .chat-split-container--open .chat-sidebar {
+    width: 100%;
+    min-width: 0;
+    border-left: none;
+  }
+}
