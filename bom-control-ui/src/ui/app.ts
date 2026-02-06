@@ -146,7 +146,8 @@ export class OpenClawApp extends LitElement {
   @state() chatCurrentModel = "Opus 4.5";
   @state() chatSelectedProvider = "anthropic";
   @state() chatApiKeys: Record<string, string> = {};
-  @state() chatApiKeySaveMode: 'temp' | 'permanent' = 'temp';
+  @state() chatApiKeyInputOpen = false;
+  @state() chatApiKeySaveStatus: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   // Voice recording state
   @state() chatIsRecording = false;
   private mediaRecorder: MediaRecorder | null = null;

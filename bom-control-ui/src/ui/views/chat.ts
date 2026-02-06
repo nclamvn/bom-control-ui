@@ -78,10 +78,11 @@ export type ChatProps = {
   onSelectProvider?: (provider: string) => void;
   // API keys per provider
   apiKeys?: Record<string, string>;
-  apiKeySaveMode?: 'temp' | 'permanent';
   onApiKeyChange?: (provider: string, key: string) => void;
-  onApiKeySaveModeChange?: (mode: 'temp' | 'permanent') => void;
-  onSaveApiKey?: (provider: string, key: string, permanent: boolean) => void;
+  onSaveApiKey?: (provider: string, key: string) => void;
+  apiKeySaveStatus?: 'idle' | 'saving' | 'saved' | 'error';
+  apiKeyInputOpen?: boolean;
+  onToggleApiKeyInput?: () => void;
   // Voice recording
   isRecording?: boolean;
   onStartRecording?: () => void;
@@ -210,6 +211,7 @@ function renderAttachmentPreview(props: ChatProps) {
 
 function getDefaultQuickActions(): QuickAction[] {
   return [
+    { id: 'build', label: t().chat.quickActions.build, icon: 'zap', prompt: '/build' },
     { id: 'code', label: t().chat.quickActions.code, icon: 'code', prompt: '' },
     { id: 'write', label: t().chat.quickActions.write, icon: 'penLine', prompt: '' },
     { id: 'create', label: t().chat.quickActions.create, icon: 'sparkles', prompt: '' },
@@ -243,6 +245,139 @@ function renderQuickActions(props: ChatProps) {
           </button>
         `,
       )}
+    </div>
+  `;
+}
+
+type VibecodeTemplate = {
+  id: string;
+  label: string;
+  icon: keyof typeof icons;
+  prompt: string;
+};
+
+function getVibecodeTemplates(): VibecodeTemplate[] {
+  return [
+    { id: 'landing', label: t().chat.vibecode.landing, icon: 'monitor', prompt: '/build quick landing' },
+    { id: 'saas', label: t().chat.vibecode.saas, icon: 'code', prompt: '/build quick saas' },
+    { id: 'dashboard', label: t().chat.vibecode.dashboard, icon: 'barChart', prompt: '/build quick dashboard' },
+    { id: 'blog', label: t().chat.vibecode.blog, icon: 'fileText', prompt: '/build quick blog' },
+    { id: 'portfolio', label: t().chat.vibecode.portfolio, icon: 'sparkles', prompt: '/build quick portfolio' },
+  ];
+}
+
+function renderVibecodeQuickStart(props: ChatProps) {
+  if (props.draft.trim().length > 0) return nothing;
+  if (!props.connected) return nothing;
+
+  const templates = getVibecodeTemplates();
+
+  return html`
+    <div class="vibecode-templates">
+      <div class="vibecode-templates-label">${t().chat.vibecode.quickStart}</div>
+      ${templates.map(
+        (tpl) => html`
+          <button
+            class="vibecode-template-btn"
+            type="button"
+            ?disabled=${!props.connected}
+            @click=${() => {
+              if (props.onQuickAction) {
+                props.onQuickAction({ id: tpl.id, label: tpl.label, icon: tpl.icon, prompt: tpl.prompt });
+              }
+            }}
+          >
+            <span class="vibecode-template-btn__icon">${icons[tpl.icon]}</span>
+            ${tpl.label}
+          </button>
+        `,
+      )}
+    </div>
+  `;
+}
+
+type VibecodeStep = 'vision' | 'context' | 'blueprint' | 'contract' | 'build' | 'refine';
+
+const VIBECODE_STEPS: VibecodeStep[] = ['vision', 'context', 'blueprint', 'contract', 'build', 'refine'];
+
+function detectVibecodeStep(messages: unknown[]): VibecodeStep | null {
+  if (!Array.isArray(messages) || messages.length === 0) return null;
+
+  let foundBuild = false;
+  let latestStep: VibecodeStep | null = null;
+
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i] as Record<string, unknown>;
+    const role = typeof msg.role === 'string' ? msg.role.toLowerCase() : '';
+    const content = typeof msg.content === 'string' ? msg.content : '';
+    const contentArr = Array.isArray(msg.content) ? msg.content : [];
+
+    let text = content;
+    if (!text && contentArr.length > 0) {
+      for (const block of contentArr) {
+        const b = block as Record<string, unknown>;
+        if (b.type === 'text' && typeof b.text === 'string') {
+          text += b.text + ' ';
+        }
+      }
+    }
+
+    if (role === 'user' && /\/build/i.test(text)) {
+      foundBuild = true;
+    }
+
+    if (!foundBuild) continue;
+    if (latestStep) continue;
+
+    if (/verification|Verification/i.test(text)) {
+      latestStep = 'refine';
+    } else if (/npm run dev|da tao xong|đã tạo xong|hoàn thành.*build/i.test(text)) {
+      latestStep = 'build';
+    } else if (/Reply "OK"|Dong y|Đồng ý|xac nhan|xác nhận.*blueprint/i.test(text)) {
+      latestStep = 'contract';
+    } else if (/BLUEPRINT|blueprint.*json/i.test(text) && (role === 'assistant' || role === 'system')) {
+      latestStep = 'blueprint';
+    } else if (/DIEU CHINH|ĐIỀU CHỈNH|GIU NGUYEN|GIỮ NGUYÊN|thay doi|thay đổi.*layout/i.test(text)) {
+      latestStep = 'context';
+    } else if (/PROJECT TYPE|LAYOUT|loai du an|loại dự án/i.test(text) && (role === 'assistant' || role === 'system')) {
+      latestStep = 'vision';
+    }
+  }
+
+  if (foundBuild && !latestStep) {
+    latestStep = 'vision';
+  }
+
+  return foundBuild ? latestStep : null;
+}
+
+function renderVibecodeProgress(step: VibecodeStep | null) {
+  if (!step) return nothing;
+
+  const steps = t().chat.vibecode.steps;
+  const stepLabels: Record<VibecodeStep, string> = {
+    vision: steps.vision,
+    context: steps.context,
+    blueprint: steps.blueprint,
+    contract: steps.contract,
+    build: steps.build,
+    refine: steps.refine,
+  };
+
+  const activeIndex = VIBECODE_STEPS.indexOf(step);
+
+  return html`
+    <div class="vibecode-progress">
+      <span class="vibecode-progress-label">${t().chat.vibecode.buildingWith}</span>
+      ${VIBECODE_STEPS.map((s, i) => {
+        const state = i < activeIndex ? 'completed' : i === activeIndex ? 'active' : 'pending';
+        return html`
+          <span class="vibecode-step vibecode-step--${state}">
+            <span class="vibecode-step__label">${stepLabels[s]}</span>
+            ${i < VIBECODE_STEPS.length - 1 ? html`<span class="vibecode-step__arrow">→</span>` : nothing}
+          </span>
+        `;
+      })}
     </div>
   `;
 }
@@ -307,9 +442,6 @@ function renderModelSelectorDropdown(props: ChatProps) {
   const models = props.availableModels ?? DEFAULT_MODELS;
   const groupedModels = groupModelsByProvider(models);
   const selectedProvider = props.selectedProvider || 'anthropic';
-  const apiKeys = props.apiKeys || {};
-  const saveMode = props.apiKeySaveMode || 'temp';
-  const currentKey = apiKeys[selectedProvider] || '';
 
   // Filter models by selected provider
   const filteredModels = models.filter((m) => m.provider === selectedProvider);
@@ -342,65 +474,6 @@ function renderModelSelectorDropdown(props: ChatProps) {
         )}
       </div>
 
-      <!-- API Key input for selected provider -->
-      <div class="model-api-key-section">
-        <div class="model-api-key-header">
-          <label class="model-api-key-label">${t().chat.apiKey}</label>
-          <div class="model-api-key-save-toggle">
-            <button
-              class="save-mode-btn ${saveMode === 'temp' ? 'active' : ''}"
-              type="button"
-              title="${t().chat.saveTemp}"
-              @click=${() => props.onApiKeySaveModeChange?.('temp')}
-            >
-              ${t().chat.tempLabel}
-            </button>
-            <button
-              class="save-mode-btn ${saveMode === 'permanent' ? 'active' : ''}"
-              type="button"
-              title="${t().chat.savePerm}"
-              @click=${() => props.onApiKeySaveModeChange?.('permanent')}
-            >
-              ${t().chat.permLabel}
-            </button>
-          </div>
-        </div>
-        <div class="model-api-key-input-wrapper">
-          <input
-            type="password"
-            class="model-api-key-input"
-            placeholder=${PROVIDER_KEY_PLACEHOLDERS[selectedProvider] || 'Enter API key...'}
-            .value=${currentKey}
-            @input=${(e: Event) => {
-              const target = e.target as HTMLInputElement;
-              props.onApiKeyChange?.(selectedProvider, target.value);
-            }}
-            @keydown=${(e: KeyboardEvent) => {
-              if (e.key === 'Enter' && currentKey.trim()) {
-                props.onSaveApiKey?.(selectedProvider, currentKey, saveMode === 'permanent');
-              }
-            }}
-          />
-          <button
-            class="model-api-key-save-btn"
-            type="button"
-            ?disabled=${!currentKey.trim()}
-            @click=${() => {
-              if (currentKey.trim()) {
-                props.onSaveApiKey?.(selectedProvider, currentKey, saveMode === 'permanent');
-              }
-            }}
-          >
-            ${icons.check}
-          </button>
-        </div>
-        <div class="model-api-key-hint">
-          ${saveMode === 'permanent'
-            ? t().chat.saveToAuthProfiles
-            : t().chat.saveSessionOnly}
-        </div>
-      </div>
-
       <!-- Filtered models list -->
       <div class="model-selector-list">
         ${filteredModels.map(
@@ -422,6 +495,72 @@ function renderModelSelectorDropdown(props: ChatProps) {
         )}
       </div>
 
+    </div>
+  `;
+}
+
+function renderApiKeyBanner(props: ChatProps) {
+  const selectedProvider = props.selectedProvider || 'anthropic';
+  const apiKeys = props.apiKeys || {};
+  const currentKey = apiKeys[selectedProvider] || '';
+  const saveStatus = props.apiKeySaveStatus || 'idle';
+
+  // Auto-show: no messages + no key for selected provider, OR user toggled it open
+  const hasKey = Boolean(currentKey.trim());
+  const isFirstTime = props.messages.length === 0 && !hasKey;
+  const shouldShow = isFirstTime || props.apiKeyInputOpen;
+
+  if (!shouldShow) return nothing;
+
+  return html`
+    <div class="api-key-banner">
+      <div class="api-key-banner__title">
+        ${icons.key}
+        <span>${isFirstTime && !props.apiKeyInputOpen ? t().chat.apiKeyNeeded : t().chat.configureApiKey}</span>
+      </div>
+      <div class="api-key-banner__row">
+        <input
+          type="password"
+          class="api-key-banner__input"
+          placeholder=${PROVIDER_KEY_PLACEHOLDERS[selectedProvider] || 'Enter API key...'}
+          .value=${currentKey}
+          @input=${(e: Event) => {
+            const target = e.target as HTMLInputElement;
+            props.onApiKeyChange?.(selectedProvider, target.value);
+          }}
+          @keydown=${(e: KeyboardEvent) => {
+            if (e.key === 'Enter' && currentKey.trim()) {
+              props.onSaveApiKey?.(selectedProvider, currentKey);
+            }
+          }}
+        />
+        <button
+          class="api-key-banner__save-btn ${saveStatus === 'saving' ? 'saving' : saveStatus === 'saved' ? 'saved' : saveStatus === 'error' ? 'error' : ''}"
+          type="button"
+          ?disabled=${!currentKey.trim() || saveStatus === 'saving'}
+          @click=${() => {
+            if (currentKey.trim()) {
+              props.onSaveApiKey?.(selectedProvider, currentKey);
+            }
+          }}
+        >
+          ${saveStatus === 'saving'
+            ? icons.loader
+            : saveStatus === 'saved'
+              ? icons.check
+              : nothing}
+          ${PROVIDER_LABELS[selectedProvider] || selectedProvider}
+        </button>
+      </div>
+      <div class="api-key-banner__hint ${saveStatus === 'saved' ? 'hint--success' : saveStatus === 'error' ? 'hint--error' : ''}">
+        ${saveStatus === 'saved'
+          ? t().chat.apiKeySaved
+          : saveStatus === 'error'
+            ? t().chat.apiKeySaveError
+            : saveStatus === 'saving'
+              ? t().chat.apiKeySaving
+              : t().chat.saveToGateway}
+      </div>
     </div>
   `;
 }
@@ -501,6 +640,8 @@ export function renderChat(props: ChatProps) {
 
       ${renderCompactionIndicator(props.compactionStatus)}
 
+      ${renderVibecodeProgress(detectVibecodeStep(props.messages))}
+
       ${
         props.focusMode
           ? html`
@@ -557,6 +698,8 @@ export function renderChat(props: ChatProps) {
               `
               : nothing
           }
+
+          ${renderApiKeyBanner(props)}
 
           <div class="chat-composer claude-style">
         ${renderAttachmentPreview(props)}
@@ -642,6 +785,14 @@ export function renderChat(props: ChatProps) {
               >
                 ${icons.mic}
               </button>
+              <button
+                class="composer-icon-btn"
+                type="button"
+                title="${t().chat.configureApiKey}"
+                @click=${() => props.onToggleApiKeyInput?.()}
+              >
+                ${icons.key}
+              </button>
             </div>
 
             <div class="composer-toolbar__right">
@@ -669,6 +820,8 @@ export function renderChat(props: ChatProps) {
         </div>
 
         ${renderQuickActions(props)}
+
+        ${renderVibecodeQuickStart(props)}
 
         ${props.showModelSelector ? renderModelSelectorDropdown(props) : nothing}
           </div>

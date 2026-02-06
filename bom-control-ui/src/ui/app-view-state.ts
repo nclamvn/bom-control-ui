@@ -63,7 +63,8 @@ export type AppViewState = {
   chatCurrentModel: string;
   chatSelectedProvider: string;
   chatApiKeys: Record<string, string>;
-  chatApiKeySaveMode: 'temp' | 'permanent';
+  chatApiKeyInputOpen: boolean;
+  chatApiKeySaveStatus: 'idle' | 'saving' | 'saved' | 'error';
   // Voice recording state
   chatIsRecording: boolean;
   // Sidebar state for split panel

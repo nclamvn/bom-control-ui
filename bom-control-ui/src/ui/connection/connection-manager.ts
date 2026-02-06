@@ -177,6 +177,17 @@ export class ConnectionManager {
   }
 
   /**
+   * Called by app when connection attempt starts
+   */
+  onConnecting(): void {
+    this.clearTimers();
+    this.updateState({
+      status: 'connecting',
+      nextRetryIn: undefined,
+    });
+  }
+
+  /**
    * Called by app when connection succeeds
    */
   onConnected(): void {
@@ -204,11 +215,9 @@ export class ConnectionManager {
       lastError: errorMessage,
       errorCode: code,
     });
-
-    // Auto-retry if not manual disconnect
-    if (!this.isManualDisconnect) {
-      this.scheduleRetry();
-    }
+    // NOTE: No auto-retry here. GatewayBrowserClient handles reconnection
+    // via its own scheduleReconnect(). Having both systems retry causes
+    // race conditions where ConnectionManager kills mid-reconnect clients.
   }
 
   /**
@@ -220,10 +229,7 @@ export class ConnectionManager {
       status: 'error',
       lastError: error || 'Không thể kết nối tới Gateway',
     });
-
-    if (!this.isManualDisconnect) {
-      this.scheduleRetry();
-    }
+    // NOTE: No auto-retry here. GatewayBrowserClient handles reconnection.
   }
 
   private scheduleRetry(): void {

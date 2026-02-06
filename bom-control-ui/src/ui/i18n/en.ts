@@ -152,6 +152,7 @@ export const en = {
 
     // Quick actions
     quickActions: {
+      build: "Build app",
       code: "Write code",
       write: "Write text",
       create: "Create",
@@ -159,16 +160,29 @@ export const en = {
       analyze: "Analyze",
     },
 
+    // Vibecode Kit
+    vibecode: {
+      quickStart: "Choose project type",
+      landing: "Landing Page",
+      saas: "SaaS App",
+      dashboard: "Dashboard",
+      blog: "Blog",
+      portfolio: "Portfolio",
+      steps: { vision: "VISION", context: "CONTEXT", blueprint: "BLUEPRINT", contract: "CONTRACT", build: "BUILD", refine: "REFINE" },
+      viewBlueprint: "View Blueprint",
+      buildingWith: "Building with Vibecode",
+    },
+
     // Model selector
     selectModel: "Select model",
     apiKey: "API Key",
     enterApiKey: "Enter API key...",
-    saveTemp: "Save temp (frontend)",
-    savePerm: "Save permanent (backend)",
-    tempLabel: "TEMP",
-    permLabel: "PERM",
-    saveToAuthProfiles: "Save to auth-profiles (permanent)",
-    saveSessionOnly: "Save for this session only",
+    apiKeyNeeded: "Enter API key to start chatting",
+    apiKeySaved: "API key saved!",
+    configureApiKey: "Configure API key",
+    saveToGateway: "Save to gateway (auth-profiles)",
+    apiKeySaveError: "Failed to save — check console",
+    apiKeySaving: "Saving...",
 
     // Providers
     providers: {

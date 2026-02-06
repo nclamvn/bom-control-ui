@@ -270,7 +270,13 @@ export function renderApp(state: AppViewState) {
                   void state.loadAssistantIdentity();
                 },
                 onConnect: () => state.connect(),
-                onRefresh: () => state.loadOverview(),
+                onRefresh: () => {
+                  if (!state.connected) {
+                    state.connect();
+                  } else {
+                    state.loadOverview();
+                  }
+                },
               })
             : nothing
         }
@@ -533,6 +539,21 @@ export function renderApp(state: AppViewState) {
                 onDraftChange: (next) => (state.chatMessage = next),
                 attachments: state.chatAttachments,
                 onAttachmentsChange: (next) => (state.chatAttachments = next),
+                quickActions: [
+                  { id: 'build', label: 'Build app', icon: 'zap' as const, prompt: '/build' },
+                  { id: 'code', label: 'Write code', icon: 'code' as const, prompt: '' },
+                  { id: 'write', label: 'Write text', icon: 'penLine' as const, prompt: '' },
+                  { id: 'create', label: 'Create', icon: 'sparkles' as const, prompt: '' },
+                  { id: 'learn', label: 'Learn', icon: 'graduationCap' as const, prompt: '' },
+                  { id: 'analyze', label: 'Analyze', icon: 'brain' as const, prompt: '' },
+                ],
+                onQuickAction: (action) => {
+                  if (action.prompt?.startsWith('/')) {
+                    state.handleSendChat(action.prompt);
+                  } else {
+                    state.chatMessage = action.prompt || action.label;
+                  }
+                },
                 onSend: () => state.handleSendChat(),
                 canAbort: Boolean(state.chatRunId),
                 onAbort: () => void state.handleAbortChat(),
@@ -553,7 +574,8 @@ export function renderApp(state: AppViewState) {
                 currentModel: state.chatCurrentModel,
                 selectedProvider: state.chatSelectedProvider,
                 apiKeys: state.chatApiKeys,
-                apiKeySaveMode: state.chatApiKeySaveMode,
+                apiKeySaveStatus: state.chatApiKeySaveStatus,
+                apiKeyInputOpen: state.chatApiKeyInputOpen,
                 onToggleModelSelector: () => {
                   state.chatModelSelectorOpen = !state.chatModelSelectorOpen;
                 },
@@ -590,11 +612,11 @@ export function renderApp(state: AppViewState) {
                     }
                   }
                 },
+                onToggleApiKeyInput: () => {
+                  state.chatApiKeyInputOpen = !state.chatApiKeyInputOpen;
+                },
                 onApiKeyChange: (provider: string, key: string) => {
                   state.chatApiKeys = { ...state.chatApiKeys, [provider]: key };
-                },
-                onApiKeySaveModeChange: (mode: 'temp' | 'permanent') => {
-                  state.chatApiKeySaveMode = mode;
                 },
                 // Voice recording
                 isRecording: state.chatIsRecording,
@@ -639,25 +661,22 @@ export function renderApp(state: AppViewState) {
                   }
                   state.chatIsRecording = false;
                 },
-                onSaveApiKey: async (provider: string, key: string, permanent: boolean) => {
-                  // Always save to local state
+                onSaveApiKey: async (provider: string, key: string) => {
                   state.chatApiKeys = { ...state.chatApiKeys, [provider]: key };
-
-                  if (permanent) {
-                    // Save to localStorage for persistence across sessions
-                    try {
-                      const stored = localStorage.getItem('openclaw-api-keys');
-                      const keys = stored ? JSON.parse(stored) : {};
-                      keys[provider] = key;
-                      localStorage.setItem('openclaw-api-keys', JSON.stringify(keys));
-
-                      // TODO: Also save to backend auth-profiles when API is available
-                      // The auth-profiles file is at ~/.openclaw/agents/<agentId>/agent/auth-profiles.json
-                    } catch (err) {
-                      console.error("Failed to save API key:", err);
-                      state.lastError = `Failed to save API key: ${err}`;
+                  state.chatApiKeySaveStatus = 'saving';
+                  try {
+                    if (!state.client || !state.connected) {
+                      throw new Error("gateway not connected");
                     }
+                    await state.client.request("auth.profiles.set", { provider, key });
+                    state.chatApiKeySaveStatus = 'saved';
+                    setTimeout(() => { state.chatApiKeyInputOpen = false; }, 1500);
+                  } catch (err) {
+                    console.error("Failed to save API key:", err);
+                    state.chatApiKeySaveStatus = 'error';
+                    state.lastError = `Failed to save API key: ${err instanceof Error ? err.message : err}`;
                   }
+                  setTimeout(() => { state.chatApiKeySaveStatus = 'idle'; }, 3000);
                 },
               })
             : nothing

@@ -153,6 +153,7 @@ export const vi = {
 
     // Quick actions
     quickActions: {
+      build: "Build app",
       code: "Viết mã",
       write: "Soạn văn",
       create: "Tạo mới",
@@ -160,16 +161,29 @@ export const vi = {
       analyze: "Phân tích",
     },
 
+    // Vibecode Kit
+    vibecode: {
+      quickStart: "Chọn loại dự án",
+      landing: "Landing Page",
+      saas: "Ứng dụng SaaS",
+      dashboard: "Dashboard",
+      blog: "Blog",
+      portfolio: "Portfolio",
+      steps: { vision: "VISION", context: "CONTEXT", blueprint: "BLUEPRINT", contract: "CONTRACT", build: "BUILD", refine: "REFINE" },
+      viewBlueprint: "Xem Blueprint",
+      buildingWith: "Đang build với Vibecode",
+    },
+
     // Model selector
     selectModel: "Chọn mô hình",
     apiKey: "Khóa API",
     enterApiKey: "Nhập khóa API...",
-    saveTemp: "Lưu tạm (frontend)",
-    savePerm: "Lưu cố định (backend)",
-    tempLabel: "TẠM",
-    permLabel: "CỐ ĐỊNH",
-    saveToAuthProfiles: "Lưu vào auth-profiles (cố định)",
-    saveSessionOnly: "Chỉ lưu trong phiên làm việc này",
+    apiKeyNeeded: "Nhập khóa API để bắt đầu trò chuyện",
+    apiKeySaved: "Đã lưu khóa API!",
+    configureApiKey: "Cài đặt khóa API",
+    saveToGateway: "Lưu vào gateway (auth-profiles)",
+    apiKeySaveError: "Lưu thất bại — xem console",
+    apiKeySaving: "Đang lưu...",
 
     // Providers
     providers: {

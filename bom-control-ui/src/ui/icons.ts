@@ -399,6 +399,14 @@ export const icons = {
       <polyline points="12 5 19 12 12 19" />
     </svg>
   `,
+  key: html`
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="7.5" cy="15.5" r="5.5" />
+      <path d="m21 2-9.3 9.3" />
+      <path d="M18.5 5.5 21 3" />
+      <path d="m15 8 2.5 2.5" />
+    </svg>
+  `,
 } as const;
 
 export type IconName = keyof typeof icons;
