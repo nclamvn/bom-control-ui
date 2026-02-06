@@ -23,3 +23,13 @@ dist/
 *.tmp
 *.temp
 .cache/
+
+# Auth credentials (OpenClaw)
+**/auth-profiles.json
+
+# Untracked source repos / projects
+openclaw-src/
+openclaw-vietnam/
+apple-showcase/
+projects/
+skills/

@@ -4,11 +4,11 @@
 
 ## Basics
 
-- **Name:** Lâm
-- **What to call them:** anh
-- **Pronouns:** anh/ảnh
-- **Timezone:** Asia/Ho_Chi_Minh (UTC+7)
-- **Language:** Vietnamese preferred
+- **Name:** *(your name)*
+- **What to call them:** *(how you'd like to be addressed)*
+- **Pronouns:** *(your pronouns)*
+- **Timezone:** *(your timezone)*
+- **Language:** *(preferred language)*
 
 ---
 

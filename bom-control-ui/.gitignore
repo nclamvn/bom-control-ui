@@ -17,5 +17,9 @@ Thumbs.db
 # Logs
 *.log
 
+# Secrets
+.env
+.env.*
+
 # Lock files (optional - remove if you want to track)
 # pnpm-lock.yaml
