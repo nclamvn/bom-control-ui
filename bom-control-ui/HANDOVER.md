@@ -1,71 +1,82 @@
 # HANDOVER - BỜM Control UI
 
-> Cập nhật: 2026-02-01 19:30
+> Cập nhật: 2026-02-06 12:00
 
 ## Tổng quan dự án
 
-**BỜM Control UI** - Giao diện điều khiển cho OpenClaw Gateway, viết bằng Lit.js (Web Components) + TypeScript.
+**BỜM Control UI** — Giao diện điều khiển tiếng Việt cho OpenClaw Gateway.
+Viết bằng LitElement + TypeScript + Vite. Xây dựng bằng Vibecode Kit.
 
-## Trạng thái hiện tại: ✅ HOẠT ĐỘNG
+## Trạng thái hiện tại: ✅ HOẠT ĐỘNG — SẴN SÀNG PUBLIC
 
-- Kết nối Gateway: **OK**
-- Device Auth: **OK** (đã fix root cause)
-- UI tiếng Việt: **OK** (có dấu)
+- Kết nối Gateway: **OK** (auto-reconnect)
+- Device Auth: **OK**
+- Chat: **OK** (gửi/nhận tin nhắn, markdown rendering)
+- API Key: **OK** (banner trên composer, lưu trực tiếp vào gateway)
+- UI tiếng Việt: **OK** (song ngữ Việt/Anh)
 - Icons: **OK** (outline style)
 - Split Panel Layout: **OK** (Claude-style)
+- Bảo mật: **OK** (không có secrets trong repo, .gitignore đầy đủ)
 
-## Commits gần nhất
+## Commits
 
 ```
-a13ff5e feat: Claude-style split panel layout
-c3798da fix: device auth signature và connection issues
-2f51d14 feat: Premium UI redesign with 4-section navigation
-eafa3b6 Initial commit
+19a76cd Add README with Vibecode Kit methodology and Vietnamese-first focus
+a57431f Harden .gitignore and remove personal info before public release
+6189025 Redesign API key input: dedicated banner + fix WebSocket reconnect
+db608e1 Initial commit: Bờm workspace + Control UI
 ```
 
-## Các lỗi đã fix (2026-02-01)
+## Thay đổi quan trọng (2026-02-06)
 
-### 1. "device signature invalid" (ROOT CAUSE)
+### 1. Redesign API Key Input Flow
 
-**File:** `src/lib/device-auth.ts`
+**Vấn đề cũ:**
+- API key input chôn trong model selector dropdown — khó tìm
+- Toggle "Tạm" vs "Cố định" vô dụng — gateway không đọc key từ client
+- Không có hướng dẫn cho người mới — nhận response rỗng
 
-**Vấn đề:** `buildDeviceAuthPayload()` trả về object → `"[object Object]"` khi sign
-
-**Fix:** Trả về pipe-delimited string:
-```typescript
-return "v1|deviceId|clientId|clientMode|role|scopes|signedAtMs|token"
-```
-
-### 2. WebSocket kết nối sai port
-
-**File:** `src/ui/storage.ts`
-
-**Vấn đề:** Dev server (5173) dùng làm gateway URL
-
-**Fix:** Detect dev server, hardcode gateway port:
-```typescript
-if (isDevServer) return "ws://127.0.0.1:18789";
-```
-
-### 3. Icons không đúng style
-
-**File:** `src/ui/icons.ts`
-
-**Fix:** Thêm `fill="none" stroke="currentColor" stroke-width="2"`
-
-### 4. Split Panel Layout (Claude-style)
+**Giải pháp:**
+- **Xóa** API key section khỏi model selector dropdown
+- **Thêm** `renderApiKeyBanner()` — banner chuyên dụng nằm trên composer
+- Banner **tự hiện** khi chưa có API key + chưa có tin nhắn (first-time)
+- Luôn lưu qua `auth.profiles.set` RPC — không còn temp/perm toggle
+- **Thêm** nút key icon trên composer toolbar để toggle banner
 
 **Files:**
-- `src/ui/app.ts` - Auto-collapse nav khi mở sidebar
-- `src/ui/app-render.ts` - Thêm class `shell--split-panel`
-- `src/styles/layout.css` - CSS cho split-panel mode
-- `src/styles/chat/sidebar.css` - CSS cho chat split container
+| File | Thay đổi |
+|------|----------|
+| `views/chat.ts` | Xóa API key section từ dropdown; thêm `renderApiKeyBanner()`; thêm key button |
+| `app-render.ts` | Đơn giản hóa `onSaveApiKey` (luôn permanent); thêm toggle props |
+| `app-view-state.ts` | `chatApiKeySaveMode` → `chatApiKeyInputOpen` |
+| `app.ts` | Tương tự state change |
+| `i18n/en.ts` + `vi.ts` | Xóa temp/perm strings; thêm banner strings |
+| `styles/chat/composer.css` | Xóa save-mode CSS; thêm `.api-key-banner` styles |
+| `icons.ts` | Thêm Lucide `key` icon |
 
-**Tính năng:**
-- Khi mở content panel → nav sidebar tự động collapse (chỉ icon)
-- Màn hình chia đôi: Chat trái + Content phải
-- Chat area căn giữa trong nửa trái
-- Giống design của Claude.ai
+### 2. Fix WebSocket Reconnect Race Conditions
+
+**Stale callback bug:**
+- `connectGateway()` stop client cũ → `onclose` fire async → ghi đè state client mới
+- Fix: guard `if (host.client !== client) return;` trong mọi callback
+
+**Dual reconnect bug:**
+- `GatewayBrowserClient.scheduleReconnect()` VÀ `ConnectionManager.scheduleRetry()` cùng chạy
+- ConnectionManager kill client đang reconnect giữa chừng
+- Fix: xóa `scheduleRetry()` khỏi ConnectionManager, để GatewayBrowserClient xử lý
+
+**Files:** `app-gateway.ts`, `connection-manager.ts`, `storage.ts`
+
+### 3. Security Hardening cho Public Release
+
+- `.gitignore`: thêm `openclaw-src/`, `openclaw-vietnam/`, `apple-showcase/`, `projects/`, `skills/`, `**/auth-profiles.json`
+- `bom-control-ui/.gitignore`: thêm `.env`, `.env.*`
+- `USER.md` + `memory/`: xóa tên cá nhân, thay bằng placeholder
+
+### 4. README
+
+- Root `README.md`: giới thiệu Bờm, Vibecode Kit methodology, tiếng Việt first
+- `bom-control-ui/README.md`: chi tiết tech stack, setup, features
 
 ## Cách chạy
 
@@ -75,68 +86,84 @@ openclaw gateway
 
 # 2. Chạy dev server (terminal 2)
 cd /Users/mac/clawd/bom-control-ui
-npm run dev
+pnpm dev
 
-# 3. Lấy token
-openclaw dashboard --no-open
-
-# 4. Mở browser
-http://localhost:5173/?token=<TOKEN>
+# 3. Mở browser
+http://localhost:3334
 ```
 
-## Cấu trúc thư mục quan trọng
+Khi lần đầu mở — API key banner tự hiện. Nhập key → Lưu → Bắt đầu chat.
+
+## Cấu trúc thư mục
 
 ```
 src/
 ├── lib/
-│   ├── device-auth.ts      # Build auth payload (đã fix)
-│   └── client-info.ts      # Client constants
+│   ├── device-auth.ts        # Build auth payload
+│   ├── client-info.ts        # Client constants
+│   ├── session-key.ts        # Session key management
+│   └── reasoning-tags.ts     # Parse reasoning tags
 ├── ui/
-│   ├── gateway.ts          # WebSocket client
-│   ├── storage.ts          # LocalStorage + gateway URL (đã fix)
-│   ├── device-identity.ts  # Ed25519 keypair management
-│   ├── device-auth.ts      # Token storage
-│   ├── icons.ts            # SVG icons (đã fix)
-│   ├── i18n/               # Ngôn ngữ (vi.ts, en.ts)
-│   ├── components/         # UI components
-│   │   ├── connection-banner.ts
-│   │   ├── loading-states.ts
-│   │   └── error-states.ts
-│   ├── connection/
-│   │   └── connection-manager.ts
-│   └── views/
-│       └── setup-guide.ts
+│   ├── app.ts                # Main LitElement component
+│   ├── app-render.ts         # Render delegation + prop wiring
+│   ├── app-view-state.ts     # AppViewState type definition
+│   ├── app-gateway.ts        # connectGateway() — creates WS clients
+│   ├── app-chat.ts           # Chat message handling
+│   ├── gateway.ts            # GatewayBrowserClient (WS + auto-reconnect)
+│   ├── storage.ts            # LocalStorage + gateway URL detection
+│   ├── icons.ts              # SVG icons (Lucide-style)
+│   ├── i18n/                 # vi.ts, en.ts
+│   ├── views/
+│   │   └── chat.ts           # Chat view: model selector, composer, API key banner
+│   ├── chat/
+│   │   └── grouped-render.ts # Message grouping + rendering
+│   └── connection/
+│       └── connection-manager.ts  # UI state tracker for connection
 └── styles/
-    ├── animations.css
-    ├── connection.css
-    └── states.css
+    ├── chat/
+    │   ├── composer.css       # Composer + API key banner styles
+    │   ├── grouped.css        # Chat message styles
+    │   ├── layout.css         # Chat layout
+    │   ├── sidebar.css        # Split panel sidebar
+    │   └── text.css           # Text formatting
+    ├── layout.css             # Main layout
+    ├── layout.mobile.css      # Mobile responsive
+    ├── connection.css         # Connection banner
+    └── animations.css         # Animations
 ```
 
-## Reference code
+## Kiến thức quan trọng
 
-Gateway auth implementation gốc:
-```
-/Users/mac/clawd/openclaw-src/src/gateway/device-auth.ts
-```
+### Gateway Communication
+- WebSocket tại `ws://127.0.0.1:18789`
+- Dev server (Vite) port 3334 với proxy đến gateway
+- RPC: `client.request("method", params)` — e.g. `auth.profiles.set`, `chat.send`
 
-## Checklist khi debug connection
+### State Management
+- `app.ts` (OpenClawApp) giữ toàn bộ `@state()` reactive properties
+- `app-render.ts` wire props từ state xuống views
+- `AppViewState` type không cover hết methods (pre-existing type gap) — runtime OK
+
+### Gotchas
+- **WebSocket.close() là async** — `stop()` set `this.ws = null` nhưng `onclose` fire sau
+- **Pre-existing TS errors** trong `app-render.ts` và `app-render.helpers.ts` — đừng nhầm với lỗi mới
+- **Gateway auth fallback** — thử key theo thứ tự trong `auth-profiles.json`, retry khi 401
+
+## Checklist debug connection
 
 1. [ ] Gateway đang chạy? `lsof -i :18789`
-2. [ ] Có token? `openclaw dashboard --no-open`
-3. [ ] Clear localStorage nếu lỗi signature
-4. [ ] Check console log trong browser
+2. [ ] Dev server đúng port? `http://localhost:3334`
+3. [ ] Console errors trong browser?
+4. [ ] `auth-profiles.json` có key hợp lệ? `cat ~/.openclaw/agents/main/agent/auth-profiles.json`
+5. [ ] Clear localStorage nếu lỗi signature
 
 ## Việc cần làm tiếp (TODO)
 
-- [ ] Test đầy đủ các tính năng UI
-- [ ] Thêm unit tests cho device-auth.ts
-- [ ] Kiểm tra edge cases (offline, token expired)
+- [ ] Test edge cases: offline, token expired, invalid API key feedback
+- [ ] Unit tests cho device-auth.ts
 - [ ] Optimize bundle size
-
-## Bảo mật
-
-✅ Không có API key trong repo
-✅ .gitignore đã cấu hình đúng
+- [ ] Mobile responsive testing
+- [ ] Thêm project types cho Vibecode skill (landing, saas, dashboard)
 
 ---
 
