@@ -1,6 +1,6 @@
 # HANDOVER - Bờm Workspace 👻
 
-> Cập nhật: 2026-02-07
+> Cập nhật: 2026-02-08
 
 ## Tổng quan
 
@@ -101,6 +101,7 @@ clawd/                          ← Root workspace
 - Song ngữ Việt/Anh (i18n)
 - Split panel layout (Claude-style)
 - Device auth + session key management
+- Refined minimal UI: 2-group sidebar (Core + Admin), flat monochrome bg, bar indicators
 
 **Cách chạy:**
 ```bash
@@ -122,7 +123,7 @@ http://localhost:3334
 
 **Thay đổi chính:**
 - Việt hóa hoàn toàn (song ngữ VI/EN)
-- Navigation giảm từ 11 → 5 tabs
+- Navigation giảm từ 11 → 7 sidebar tabs (4 ẩn, truy cập qua ⌘K)
 - Update indicator (tự check upstream releases)
 - Vibecode methodology + tools
 
@@ -226,6 +227,8 @@ Hệ thống files cho AI agent persistence:
 ## Commits (main branch)
 
 ```
+a14b2a1 Refined minimal UI: simplify sidebar to 2 groups, flatten bg, modernize styles
+f213410 Add design skills suite: frontend-design, theme-factory, canvas-design
 2a18956 Update HANDOVER.md with latest changes and project status
 19a76cd Add README with Vibecode Kit methodology and Vietnamese-first focus
 a57431f Harden .gitignore and remove personal info before public release
