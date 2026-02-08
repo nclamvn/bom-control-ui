@@ -19,7 +19,11 @@ export const vi = {
     logs: "Nhật ký",
     docs: "Tài liệu",
 
-    // Groups - Premium 4-section structure
+    // Groups - Minimal 2-group structure
+    core: "Chính",
+    admin: "Quản trị",
+
+    // Legacy groups (keep for compatibility)
     conversations: "HỘI THOẠI",
     connections: "KẾT NỐI",
     activity: "HOẠT ĐỘNG",

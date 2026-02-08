@@ -154,11 +154,6 @@ export function renderApp(state: AppViewState) {
           </div>
         </div>
         <div class="topbar-status">
-          <div class="pill">
-            <span class="statusDot ${state.connected ? "ok" : ""}"></span>
-            <span>${t().health.title}</span>
-            <span class="mono">${state.connected ? t().health.ok : t().health.offline}</span>
-          </div>
           ${renderThemeToggle(state)}
         </div>
       </header>
@@ -212,23 +207,6 @@ export function renderApp(state: AppViewState) {
             </div>
           `;
         })}
-        <div class="nav-group nav-group--links">
-          <div class="nav-label nav-label--static">
-            <span class="nav-label__text">${t().nav.resources}</span>
-          </div>
-          <div class="nav-group__items">
-            <a
-              class="nav-item nav-item--external"
-              href="https://docs.openclaw.ai"
-              target="_blank"
-              rel="noreferrer"
-              title=${t().sidebar.docs}
-            >
-              <span class="nav-item__icon" aria-hidden="true">${icons.book}</span>
-              <span class="nav-item__text">${t().nav.docs}</span>
-            </a>
-          </div>
-        </div>
         ${renderNavStatus(state.connected)}
       </aside>
       <main class="content ${isChat ? "content--chat" : ""}">

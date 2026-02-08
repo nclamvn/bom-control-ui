@@ -5,8 +5,8 @@
 .shell {
   --shell-pad: 16px;
   --shell-gap: 16px;
-  --shell-nav-width: 200px;
-  --shell-topbar-height: 52px;
+  --shell-nav-width: 180px;
+  --shell-topbar-height: 48px;
   --shell-focus-duration: 200ms;
   --shell-focus-ease: var(--ease-out);
   height: 100vh;
@@ -126,8 +126,8 @@
 }
 
 .brand-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
@@ -138,7 +138,7 @@
 }
 
 .brand-title {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -282,7 +282,7 @@
   grid-area: nav;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 10px;
+  padding: 16px 12px;
   background: var(--bg);
   scrollbar-width: none; /* Firefox */
   transition:
@@ -411,7 +411,7 @@
 
 /* Nav groups */
 .nav-group {
-  margin-bottom: 8px;
+  margin-bottom: 16px;
   display: grid;
   gap: 0;
 }
@@ -438,16 +438,16 @@
   width: 100%;
   padding: 8px 10px;
   font-size: 11px;
-  font-weight: 600;
-  color: var(--text-strong);
+  font-weight: 500;
+  color: var(--muted);
   margin-bottom: 2px;
   background: transparent;
   border: none;
   cursor: pointer;
   text-align: left;
   border-radius: var(--radius-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  text-transform: none;
+  letter-spacing: 0.04em;
   transition:
     color var(--duration-fast) ease,
     background var(--duration-fast) ease;
@@ -488,7 +488,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  padding: 5px 10px;
+  padding: 7px 10px;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   background: transparent;
@@ -529,21 +529,21 @@
 
 .nav-item:hover {
   color: var(--text);
-  background: linear-gradient(to right, rgba(220, 38, 38, 0.15), transparent);
+  background: var(--bg-hover);
   text-decoration: none;
-  margin-left: -10px;
-  padding-left: 20px;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding-left: 16px;
 }
 
 .nav-item:hover::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: #dc2626;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 16px;
+  border-radius: 1px;
+  background: var(--muted);
 }
 
 .nav-item:hover .nav-item__icon {
@@ -552,25 +552,25 @@
 
 .nav-item.active {
   color: var(--text-strong);
-  background: linear-gradient(to right, rgba(220, 38, 38, 0.2), transparent);
-  margin-left: -10px;
-  padding-left: 20px;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: rgba(255, 255, 255, 0.06);
+  padding-left: 16px;
 }
 
 .nav-item.active::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: #dc2626;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 16px;
+  border-radius: 1px;
+  background: var(--accent);
 }
 
 .nav-item.active .nav-item__icon {
   opacity: 1;
-  color: #dc2626;
+  color: var(--text-strong);
 }
 
 /* Keyboard shortcut hint */
@@ -667,7 +667,7 @@
 
 .content {
   grid-area: content;
-  padding: 16px 20px 32px;
+  padding: 20px 28px 36px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -676,16 +676,17 @@
   overflow-x: hidden;
 }
 
-/* Dark theme: sidebar/header lighter than content for contrast */
+/* Dark theme: flat monochrome — all areas share #121212 */
 :root[data-theme="dark"] .topbar,
 :root:not([data-theme="light"]) .topbar {
-  background: #1e1e1e;
-  border-bottom-color: #2a2a2a;
+  background: #121212;
+  border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
 :root[data-theme="dark"] .nav,
 :root:not([data-theme="light"]) .nav {
-  background: #1e1e1e;
+  background: #121212;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 :root[data-theme="dark"] .content,
@@ -693,18 +694,19 @@
   background: #121212;
 }
 
-/* Light theme: gray content darker than header/sidebar for contrast */
+/* Light theme: flat white — all areas share #ffffff */
 :root[data-theme="light"] .topbar {
-  background: #fafafa;
-  border-bottom-color: #e5e5e5;
+  background: #ffffff;
+  border-bottom-color: rgba(0, 0, 0, 0.06);
 }
 
 :root[data-theme="light"] .nav {
-  background: #fafafa;
+  background: #ffffff;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 :root[data-theme="light"] .content {
-  background: #f0f0f0;
+  background: #ffffff;
 }
 
 .content--chat {
@@ -718,7 +720,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   padding: 0;
   overflow: hidden;
   transform-origin: top center;
@@ -739,8 +741,8 @@
 }
 
 .page-title {
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 600;
   letter-spacing: -0.035em;
   line-height: 1.15;
   color: var(--text-strong);

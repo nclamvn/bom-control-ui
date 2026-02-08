@@ -40,8 +40,11 @@ function getCommands(props: CommandPaletteProps): Command[] {
   const translations = t();
   const commands: Command[] = [];
 
-  // Navigation commands
-  const allTabs: Tab[] = TAB_GROUPS.flatMap(group => [...group.tabs]);
+  // Navigation commands — sidebar tabs + hidden tabs still accessible via ⌘K
+  const allTabs: Tab[] = [
+    ...TAB_GROUPS.flatMap(group => [...group.tabs]),
+    "sessions", "instances", "cron", "skills",
+  ];
 
   allTabs.forEach((tab, index) => {
     const group = TAB_GROUPS.find(g => g.tabs.includes(tab));

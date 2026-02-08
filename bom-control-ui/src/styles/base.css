@@ -31,7 +31,7 @@
   --muted-foreground: #71717a;
 
   /* Border - Subtle but defined */
-  --border: #27272a;
+  --border: #232326;
   --border-strong: #3f3f46;
   --border-hover: #52525b;
   --border-subtle: rgba(255, 255, 255, 0.06);
@@ -132,9 +132,9 @@
   --z-max: 9999;
 
   /* Layout */
-  --sidebar-width: 200px;
+  --sidebar-width: 180px;
   --sidebar-collapsed: 52px;
-  --header-height: 52px;
+  --header-height: 48px;
   --content-max-width: 1200px;
   --chat-max-width: 768px;
 

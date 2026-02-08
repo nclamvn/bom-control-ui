@@ -18,7 +18,11 @@ export const en = {
     logs: "Logs",
     docs: "Docs",
 
-    // Groups - Premium 4-section structure
+    // Groups - Minimal 2-group structure
+    core: "Core",
+    admin: "Admin",
+
+    // Legacy groups (keep for compatibility)
     conversations: "CONVERSATIONS",
     connections: "CONNECTIONS",
     activity: "ACTIVITY",

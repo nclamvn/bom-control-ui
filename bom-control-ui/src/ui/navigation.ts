@@ -1,41 +1,32 @@
 import type { IconName } from "./icons.js";
 import { t } from "./i18n";
 
-// Tab groups with translation keys - Premium 4-section structure
+// Tab groups with translation keys - Minimal 2-group structure
 export const TAB_GROUPS = [
   {
-    label: "conversations",
-    labelKey: "conversations",
-    tabs: ["chat", "sessions"],
+    label: "core",
+    labelKey: "core",
+    tabs: ["chat", "overview", "channels"],
     icon: "messageSquare",
     shortcut: "1"
   },
   {
-    label: "connections",
-    labelKey: "connections",
-    tabs: ["channels", "instances"],
-    icon: "plug",
-    shortcut: "2"
-  },
-  {
-    label: "activity",
-    labelKey: "activity",
-    tabs: ["overview", "cron", "logs"],
-    icon: "activity",
-    shortcut: "3"
-  },
-  {
-    label: "settings",
-    labelKey: "settings",
-    tabs: ["config", "skills", "nodes", "debug"],
+    label: "admin",
+    labelKey: "admin",
+    tabs: ["config", "nodes", "debug", "logs"],
     icon: "settings",
-    shortcut: "4"
+    shortcut: "2"
   },
 ] as const;
 
 export function getTabGroupLabel(group: (typeof TAB_GROUPS)[number]): string {
   const translations = t();
   switch (group.labelKey) {
+    case "core":
+      return (translations.nav as Record<string, string>).core ?? "Core";
+    case "admin":
+      return (translations.nav as Record<string, string>).admin ?? "Admin";
+    // Legacy fallbacks
     case "conversations":
       return translations.nav.conversations ?? "CONVERSATIONS";
     case "connections":

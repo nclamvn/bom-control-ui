@@ -39,12 +39,10 @@ type LifecycleHost = {
   setTab: (tab: Tab) => void;
 };
 
-// Tab shortcuts mapping
+// Tab shortcuts mapping (⌘1 = Core first tab, ⌘2 = Admin first tab)
 const TAB_SHORTCUTS: Record<string, Tab> = {
   "1": "chat",
-  "2": "channels",
-  "3": "overview",
-  "4": "config",
+  "2": "config",
 };
 
 export function handleConnected(host: LifecycleHost) {
@@ -76,7 +74,7 @@ export function handleConnected(host: LifecycleHost) {
     if (e.key === "Escape" && host.commandPaletteOpen) {
       host.commandPaletteOpen = false;
     }
-    // ⌘1-4 for navigation (only when command palette is closed)
+    // ⌘1-2 for navigation (only when command palette is closed)
     if (!host.commandPaletteOpen && (e.metaKey || e.ctrlKey) && TAB_SHORTCUTS[e.key]) {
       e.preventDefault();
       host.setTab(TAB_SHORTCUTS[e.key]);
