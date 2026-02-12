@@ -36,7 +36,7 @@ export async function loadChatHistory(state: ChatState) {
     const res = (await state.client.request("chat.history", {
       sessionKey: state.sessionKey,
       limit: 200,
-    })) as { messages?: unknown[]; thinkingLevel?: string | null };
+    })) as { messages?: unknown[]; thinkingLevel?: string | null; memoryEnabled?: boolean };
     state.chatMessages = Array.isArray(res.messages) ? res.messages : [];
     state.chatThinkingLevel = res.thinkingLevel ?? null;
   } catch (err) {

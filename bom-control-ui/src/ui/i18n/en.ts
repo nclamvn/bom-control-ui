@@ -16,6 +16,7 @@ export const en = {
     config: "Config",
     debug: "Debug",
     logs: "Logs",
+    memory: "Memory",
     docs: "Docs",
 
     // Groups - Minimal 2-group structure
@@ -46,6 +47,7 @@ export const en = {
       config: "Edit ~/.openclaw/openclaw.json safely.",
       debug: "Gateway snapshots, events and manual RPC calls.",
       logs: "Live tail gateway file logs.",
+      memory: "Browse and manage user facts extracted from conversations.",
     },
   },
 
@@ -252,6 +254,8 @@ export const en = {
       onGatewayHost: "on the gateway host.",
       httpFallback: "If HTTP is required, set",
       tokenOnly: "(token only).",
+      insecureBanner: "Insecure mode active — security checks are relaxed.",
+      insecureDetail: "This gateway has dangerous security overrides enabled. Review your config.",
     },
 
     // Snapshot
@@ -353,6 +357,26 @@ export const en = {
 
     empty: "No sessions found.",
     store: "Store:",
+
+    viewTable: "Table",
+    viewCards: "Cards",
+
+    card: {
+      resume: "Resume",
+      rename: "Rename",
+      delete: "Delete",
+      messages: "messages",
+      noMessages: "No messages",
+      untitled: "Untitled session",
+    },
+
+    switcher: {
+      newSession: "New session",
+      viewAll: "View all sessions",
+      recentSessions: "Recent sessions",
+      noSessions: "No recent sessions",
+      current: "current",
+    },
   },
 
   // ============================================
@@ -452,6 +476,48 @@ export const en = {
 
     apiKey: "API Key",
     saveKey: "Save Key",
+
+    catalog: {
+      title: "Skills",
+      hint: "Manage plugins, channels, tools and services.",
+      search: "Search skills...",
+      empty: "No skills found.",
+      filters: {
+        all: "All",
+        installed: "Installed",
+        channel: "Channels",
+        tool: "Tools",
+        service: "Services",
+        memory: "Memory",
+        provider: "Auth",
+        skill: "Skills",
+      },
+      status: {
+        active: "Active",
+        disabled: "Disabled",
+        needsConfig: "Needs config",
+        error: "Error",
+        notInstalled: "Not installed",
+      },
+      actions: {
+        install: "Install",
+        settings: "Settings",
+        enable: "Enable",
+        disable: "Disable",
+      },
+      settings: {
+        title: "Settings: {name}",
+        type: "Type",
+        source: "Source",
+        config: "Configuration",
+        noConfig: "No configuration available.",
+        envVars: "Environment variables",
+        addEnvVar: "Add variable",
+        save: "Save",
+        cancel: "Cancel",
+        saving: "Saving...",
+      },
+    },
   },
 
   // ============================================
@@ -486,6 +552,8 @@ export const en = {
       tokens: "Tokens",
       active: "active",
       revoked: "revoked",
+      expired: "expired",
+      expiresIn: "expires",
       rotate: "Rotate",
       revoke: "Revoke",
     },
@@ -771,7 +839,47 @@ export const en = {
   devices: {
     confirmReject: "Reject this device pairing request?",
     newTokenPrompt: "New device token (copy and store safely):",
+    tokenCopied: "Token copied to clipboard. Store it safely.",
     confirmRevoke: "Revoke token for",
+    status: {
+      active: "Active",
+      expiring: "Expiring soon",
+      expired: "Expired",
+      revoked: "Revoked",
+      pending: "Pending",
+    },
+    tokenExpiry: "Token expires:",
+    tokenExpired: "Token expired",
+    tokenNeverExpires: "Token never expires",
+    lastIp: "Last IP:",
+    renewToken: "Renew",
+    copyToken: "Copy Token",
+    tokenWarning: "Token shown once only. Save it now.",
+    activity: "Recent activity",
+    viewMore: "View more...",
+    noActivity: "No activity yet",
+    insecureBanner: "INSECURE MODE",
+    insecureDetail: "Device auth is disabled. Not for production.",
+    viewDetails: "View details",
+    events: {
+      auth_success: "Connected",
+      auth_failure: "Login failed",
+      "auth_rate-limited": "Locked out",
+      device_paired: "Paired",
+      device_rejected: "Pair rejected",
+      token_rotate: "Token rotated",
+      token_revoke: "Token revoked",
+      token_renew: "Token renewed",
+      token_expired: "Token expired",
+      cors_rejected: "Origin rejected",
+      ip_mismatch: "IP changed",
+      ip_rejected: "IP rejected",
+      scope_violation: "Permission denied",
+      insecure_mode: "Insecure mode",
+      session_created: "Session created",
+      session_deleted: "Session deleted",
+      session_reset: "Session reset",
+    },
   },
 
   controllers: {
@@ -969,6 +1077,38 @@ export const en = {
     close: "Close sidebar",
     viewRawText: "View raw text",
     noContent: "No content",
+  },
+
+  // ============================================
+  // MEMORY
+  // ============================================
+  memory: {
+    title: "Memory",
+    search: "Search memories...",
+    extractButton: "Extract",
+    extracting: "Extracting...",
+    extracted: "Extracted!",
+    empty: "No memories yet.",
+    privacy: "Memories are stored locally and never shared.",
+    deleteConfirm: "Delete this memory?",
+    save: "Save",
+    cancel: "Cancel",
+    verified: "Verified",
+    unverified: "Unverified",
+    // Indicator (chat header)
+    indicatorActive: "memories active",
+    indicatorOff: "Memory off",
+    indicatorToggle: "Toggle memory",
+    indicatorNone: "No memories",
+    categories: {
+      all: "All",
+      identity: "Identity",
+      preference: "Preference",
+      project: "Project",
+      relationship: "Relationship",
+      skill: "Skill",
+      fact: "Fact",
+    },
   },
 
   // ============================================

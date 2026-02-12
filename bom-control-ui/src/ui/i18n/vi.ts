@@ -17,6 +17,7 @@ export const vi = {
     config: "Cấu hình",
     debug: "Gỡ lỗi",
     logs: "Nhật ký",
+    memory: "Trí nhớ",
     docs: "Tài liệu",
 
     // Groups - Minimal 2-group structure
@@ -47,6 +48,7 @@ export const vi = {
       config: "Chỉnh sửa ~/.openclaw/openclaw.json an toàn.",
       debug: "Ảnh chụp gateway, sự kiện và gọi RPC thủ công.",
       logs: "Theo dõi trực tiếp nhật ký tệp gateway.",
+      memory: "Duyệt và quản lý sự kiện người dùng trích xuất từ hội thoại.",
     },
   },
 
@@ -253,6 +255,8 @@ export const vi = {
       onGatewayHost: "trên máy chủ gateway.",
       httpFallback: "Nếu bắt buộc dùng HTTP, đặt",
       tokenOnly: "(chỉ token).",
+      insecureBanner: "Chế độ không an toàn — các kiểm tra bảo mật đã được nới lỏng.",
+      insecureDetail: "Gateway này có các ghi đè bảo mật nguy hiểm được bật. Kiểm tra lại cấu hình.",
     },
 
     // Snapshot
@@ -354,6 +358,26 @@ export const vi = {
 
     empty: "Không tìm thấy phiên nào.",
     store: "Kho lưu trữ:",
+
+    viewTable: "Bảng",
+    viewCards: "Thẻ",
+
+    card: {
+      resume: "Tiếp tục",
+      rename: "Đổi tên",
+      delete: "Xoá",
+      messages: "tin nhắn",
+      noMessages: "Chưa có tin nhắn",
+      untitled: "Phiên chưa đặt tên",
+    },
+
+    switcher: {
+      newSession: "Phiên mới",
+      viewAll: "Xem tất cả phiên",
+      recentSessions: "Phiên gần đây",
+      noSessions: "Không có phiên gần đây",
+      current: "đang mở",
+    },
   },
 
   // ============================================
@@ -453,6 +477,48 @@ export const vi = {
 
     apiKey: "Khóa API",
     saveKey: "Lưu khóa",
+
+    catalog: {
+      title: "Kỹ năng",
+      hint: "Quản lý plugin, kênh, công cụ và dịch vụ.",
+      search: "Tìm kỹ năng...",
+      empty: "Không tìm thấy kỹ năng nào.",
+      filters: {
+        all: "Tất cả",
+        installed: "Đã cài",
+        channel: "Kênh",
+        tool: "Công cụ",
+        service: "Dịch vụ",
+        memory: "Bộ nhớ",
+        provider: "Xác thực",
+        skill: "Kỹ năng",
+      },
+      status: {
+        active: "Hoạt động",
+        disabled: "Đã tắt",
+        needsConfig: "Cần cấu hình",
+        error: "Lỗi",
+        notInstalled: "Chưa cài",
+      },
+      actions: {
+        install: "Cài đặt",
+        settings: "Cài đặt",
+        enable: "Bật",
+        disable: "Tắt",
+      },
+      settings: {
+        title: "Cài đặt: {name}",
+        type: "Loại",
+        source: "Nguồn",
+        config: "Cấu hình",
+        noConfig: "Không có cấu hình.",
+        envVars: "Biến môi trường",
+        addEnvVar: "Thêm biến",
+        save: "Lưu",
+        cancel: "Hủy",
+        saving: "Đang lưu...",
+      },
+    },
   },
 
   // ============================================
@@ -487,6 +553,8 @@ export const vi = {
       tokens: "Token",
       active: "hoạt động",
       revoked: "đã thu hồi",
+      expired: "hết hạn",
+      expiresIn: "hết hạn",
       rotate: "Xoay vòng",
       revoke: "Thu hồi",
     },
@@ -772,7 +840,47 @@ export const vi = {
   devices: {
     confirmReject: "Từ chối yêu cầu ghép nối thiết bị này?",
     newTokenPrompt: "Token thiết bị mới (sao chép và lưu trữ an toàn):",
+    tokenCopied: "Đã sao chép token vào clipboard. Lưu trữ an toàn.",
     confirmRevoke: "Thu hồi token cho",
+    status: {
+      active: "Hoạt động",
+      expiring: "Sắp hết hạn",
+      expired: "Hết hạn",
+      revoked: "Đã thu hồi",
+      pending: "Chờ duyệt",
+    },
+    tokenExpiry: "Token hết hạn:",
+    tokenExpired: "Token đã hết hạn",
+    tokenNeverExpires: "Token không hết hạn",
+    lastIp: "IP gần nhất:",
+    renewToken: "Gia hạn",
+    copyToken: "Copy Token",
+    tokenWarning: "Token chỉ hiển thị 1 lần. Lưu lại ngay.",
+    activity: "Hoạt động gần đây",
+    viewMore: "Xem thêm...",
+    noActivity: "Chưa có hoạt động nào",
+    insecureBanner: "CHẾ ĐỘ KHÔNG AN TOÀN",
+    insecureDetail: "Xác thực thiết bị đang bị tắt. Không dùng cho production.",
+    viewDetails: "Xem chi tiết",
+    events: {
+      auth_success: "Kết nối thành công",
+      auth_failure: "Đăng nhập thất bại",
+      "auth_rate-limited": "Bị khoá tạm thời",
+      device_paired: "Ghép nối thành công",
+      device_rejected: "Từ chối ghép nối",
+      token_rotate: "Xoay token",
+      token_revoke: "Thu hồi token",
+      token_renew: "Gia hạn token",
+      token_expired: "Token hết hạn",
+      cors_rejected: "Origin bị từ chối",
+      ip_mismatch: "IP thay đổi",
+      ip_rejected: "IP bị từ chối",
+      scope_violation: "Không đủ quyền",
+      insecure_mode: "Chế độ không an toàn",
+      session_created: "Tạo phiên mới",
+      session_deleted: "Xoá phiên",
+      session_reset: "Reset phiên",
+    },
   },
 
   controllers: {
@@ -970,6 +1078,38 @@ export const vi = {
     close: "Đóng thanh bên",
     viewRawText: "Xem văn bản thô",
     noContent: "Không có nội dung",
+  },
+
+  // ============================================
+  // MEMORY
+  // ============================================
+  memory: {
+    title: "Trí nhớ",
+    search: "Tìm kiếm trí nhớ...",
+    extractButton: "Trích xuất",
+    extracting: "Đang trích xuất...",
+    extracted: "Đã trích xuất!",
+    empty: "Chưa có trí nhớ nào.",
+    privacy: "Trí nhớ được lưu cục bộ và không bao giờ chia sẻ.",
+    deleteConfirm: "Xóa trí nhớ này?",
+    save: "Lưu",
+    cancel: "Hủy",
+    verified: "Đã xác minh",
+    unverified: "Chưa xác minh",
+    // Indicator (chat header)
+    indicatorActive: "trí nhớ đang hoạt động",
+    indicatorOff: "Trí nhớ tắt",
+    indicatorToggle: "Bật/tắt trí nhớ",
+    indicatorNone: "Không có trí nhớ",
+    categories: {
+      all: "Tất cả",
+      identity: "Danh tính",
+      preference: "Sở thích",
+      project: "Dự án",
+      relationship: "Mối quan hệ",
+      skill: "Kỹ năng",
+      fact: "Sự kiện",
+    },
   },
 
   // ============================================

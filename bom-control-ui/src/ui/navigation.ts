@@ -6,14 +6,14 @@ export const TAB_GROUPS = [
   {
     label: "core",
     labelKey: "core",
-    tabs: ["chat", "overview", "channels"],
+    tabs: ["chat", "overview", "channels", "memory"],
     icon: "messageSquare",
     shortcut: "1"
   },
   {
     label: "admin",
     labelKey: "admin",
-    tabs: ["config", "nodes", "debug", "logs"],
+    tabs: ["config", "skills", "nodes", "debug", "logs"],
     icon: "settings",
     shortcut: "2"
   },
@@ -53,6 +53,7 @@ export type Tab =
   | "skills"
   | "nodes"
   | "chat"
+  | "memory"
   | "config"
   | "debug"
   | "logs";
@@ -64,6 +65,7 @@ const TAB_PATHS: Record<Tab, string> = {
   sessions: "/sessions",
   cron: "/cron",
   skills: "/skills",
+  memory: "/memory",
   nodes: "/nodes",
   chat: "/chat",
   config: "/config",
@@ -146,6 +148,8 @@ export function iconForTab(tab: Tab): IconName {
       return "fileText";
     case "cron":
       return "loader";
+    case "memory":
+      return "brain";
     case "skills":
       return "zap";
     case "nodes":
@@ -174,6 +178,8 @@ export function titleForTab(tab: Tab) {
       return translations.nav.sessions;
     case "cron":
       return translations.nav.cronJobs;
+    case "memory":
+      return translations.nav.memory;
     case "skills":
       return translations.nav.skills;
     case "nodes":
@@ -204,6 +210,8 @@ export function subtitleForTab(tab: Tab) {
       return subtitles.sessions;
     case "cron":
       return subtitles.cron;
+    case "memory":
+      return subtitles.memory;
     case "skills":
       return subtitles.skills;
     case "nodes":

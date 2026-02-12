@@ -12,6 +12,8 @@ import type { ThemeMode } from "./theme";
 import type { ThemeTransitionContext } from "./theme-transition";
 import type { Language } from "./storage";
 import { setLanguage, t } from "./i18n";
+import { renderSessionSwitcher } from "./components/session-switcher";
+import { renderMemoryIndicator } from "./components/memory-indicator";
 
 // Get keyboard shortcut for a tab based on its group
 function getTabShortcut(tab: Tab): string | null {
@@ -124,6 +126,55 @@ export function renderChatControls(state: AppViewState) {
           )}
         </select>
       </label>
+      ${renderSessionSwitcher({
+        open: state.sessionSwitcherOpen,
+        currentSessionKey: state.sessionKey,
+        sessions: state.sessionsResult,
+        connected: state.connected,
+        onToggle: () => {
+          state.sessionSwitcherOpen = !state.sessionSwitcherOpen;
+        },
+        onSelect: (key) => {
+          state.sessionKey = key;
+          state.chatMessage = "";
+          state.chatStream = null;
+          state.chatStreamStartedAt = null;
+          state.chatRunId = null;
+          state.resetToolStream();
+          state.resetChatScroll();
+          state.applySettings({
+            ...state.settings,
+            sessionKey: key,
+            lastActiveSessionKey: key,
+          });
+          void state.loadAssistantIdentity();
+          syncUrlWithSessionKey(state, key, true);
+          void loadChatHistory(state);
+        },
+        onNewSession: () => {
+          state.sessionSwitcherOpen = false;
+          const newKey = `session-${Date.now()}`;
+          state.sessionKey = newKey;
+          state.chatMessage = "";
+          state.chatStream = null;
+          state.chatStreamStartedAt = null;
+          state.chatRunId = null;
+          state.chatMessages = [];
+          state.resetToolStream();
+          state.resetChatScroll();
+          state.applySettings({
+            ...state.settings,
+            sessionKey: newKey,
+            lastActiveSessionKey: newKey,
+          });
+          void state.loadAssistantIdentity();
+          syncUrlWithSessionKey(state, newKey, true);
+        },
+        onViewAll: () => {
+          state.sessionSwitcherOpen = false;
+          state.setTab("sessions");
+        },
+      })}
       <button
         class="btn btn--sm btn--icon"
         ?disabled=${state.chatLoading || !state.connected}
@@ -151,6 +202,27 @@ export function renderChatControls(state: AppViewState) {
       >
         ${icons.brain}
       </button>
+      <span class="chat-controls__separator">|</span>
+      ${renderMemoryIndicator({
+        enabled: state.memoryIndicatorEnabled,
+        facts: state.memoryIndicatorFacts,
+        totalFacts: state.memoryIndicatorTotal,
+        expanded: state.memoryIndicatorExpanded,
+        connected: state.connected,
+        onToggle: () => {
+          state.memoryIndicatorEnabled = !state.memoryIndicatorEnabled;
+          state.memoryIndicatorExpanded = false;
+          if (state.client && state.sessionKey) {
+            void state.client.request("sessions.patch", {
+              key: state.sessionKey,
+              memoryEnabled: state.memoryIndicatorEnabled,
+            });
+          }
+        },
+        onExpand: () => {
+          state.memoryIndicatorExpanded = !state.memoryIndicatorExpanded;
+        },
+      })}
     </div>
   `;
 }

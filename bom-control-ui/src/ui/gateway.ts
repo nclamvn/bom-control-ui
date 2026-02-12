@@ -37,6 +37,10 @@ export type GatewayHelloOk = {
     issuedAtMs?: number;
   };
   policy?: { tickIntervalMs?: number };
+  insecureMode?: {
+    allowInsecureAuth?: boolean;
+    disableDeviceAuth?: boolean;
+  };
 };
 
 type Pending = {

@@ -12,6 +12,7 @@ import {
   titleForTab,
   type Tab,
 } from "./navigation";
+import { t } from "./i18n";
 
 /** All valid tab identifiers — sidebar tabs from TAB_GROUPS + hidden tabs */
 const ALL_TABS: Tab[] = [
@@ -60,9 +61,9 @@ describe("titleForTab", () => {
   });
 
   it("returns expected titles", () => {
-    expect(titleForTab("chat")).toBe("Chat");
-    expect(titleForTab("overview")).toBe("Overview");
-    expect(titleForTab("cron")).toBe("Cron Jobs");
+    expect(titleForTab("chat")).toBe(t().nav.chat);
+    expect(titleForTab("overview")).toBe(t().nav.overview);
+    expect(titleForTab("cron")).toBe(t().nav.cronJobs);
   });
 });
 
@@ -75,8 +76,8 @@ describe("subtitleForTab", () => {
   });
 
   it("returns descriptive subtitles", () => {
-    expect(subtitleForTab("chat")).toContain("chat session");
-    expect(subtitleForTab("config")).toContain("openclaw.json");
+    expect(subtitleForTab("chat")).toBe(t().nav.subtitles.chat);
+    expect(subtitleForTab("config")).toBe(t().nav.subtitles.config);
   });
 });
 

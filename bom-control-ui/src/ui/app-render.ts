@@ -42,6 +42,7 @@ import { renderInstances } from "./views/instances";
 import { renderLogs } from "./views/logs";
 import { renderNodes } from "./views/nodes";
 import { renderOverview } from "./views/overview";
+import { renderMemory } from "./views/memory-view";
 import { renderSessions } from "./views/sessions";
 import { renderExecApprovalPrompt } from "./views/exec-approval";
 import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation";
@@ -61,11 +62,30 @@ import { deleteSession, loadSessions, patchSession } from "./controllers/session
 import {
   installSkill,
   loadSkills,
+  loadCatalog,
+  getFilteredCatalog,
+  setSkillsSearch,
+  setSkillsFilterKind,
+  toggleCatalogSkill,
+  openSkillSettings,
+  closeSkillSettings,
+  updateSettingsField,
+  updateSettingsEnvVar,
+  addSettingsEnvVar,
+  removeSettingsEnvVar,
+  saveSkillSettings,
   saveSkillApiKey,
   updateSkillEdit,
   updateSkillEnabled,
   type SkillMessage,
 } from "./controllers/skills";
+import {
+  loadMemory,
+  searchMemory,
+  updateMemory,
+  deleteMemory,
+  extractMemory,
+} from "./controllers/memory";
 import { loadNodes } from "./controllers/nodes";
 import { loadChatHistory } from "./controllers/chat";
 import {
@@ -321,6 +341,8 @@ export function renderApp(state: AppViewState) {
                 includeGlobal: state.sessionsIncludeGlobal,
                 includeUnknown: state.sessionsIncludeUnknown,
                 basePath: state.basePath,
+                viewMode: state.settings.sessionsViewMode,
+                currentSessionKey: state.sessionKey,
                 onFiltersChange: (next) => {
                   state.sessionsFilterActive = next.activeMinutes;
                   state.sessionsFilterLimit = next.limit;
@@ -328,8 +350,76 @@ export function renderApp(state: AppViewState) {
                   state.sessionsIncludeUnknown = next.includeUnknown;
                 },
                 onRefresh: () => loadSessions(state),
+                onViewModeChange: (mode) => {
+                  state.applySettings({
+                    ...state.settings,
+                    sessionsViewMode: mode,
+                  });
+                },
+                onResume: (key) => {
+                  state.sessionKey = key;
+                  state.chatMessage = "";
+                  state.chatAttachments = [];
+                  state.chatStream = null;
+                  state.chatStreamStartedAt = null;
+                  state.chatRunId = null;
+                  state.chatQueue = [];
+                  state.resetToolStream();
+                  state.resetChatScroll();
+                  state.applySettings({
+                    ...state.settings,
+                    sessionKey: key,
+                    lastActiveSessionKey: key,
+                  });
+                  state.tab = "chat";
+                  void state.loadAssistantIdentity();
+                  void loadChatHistory(state);
+                  void refreshChatAvatar(state);
+                },
                 onPatch: (key, patch) => patchSession(state, key, patch),
                 onDelete: (key) => deleteSession(state, key),
+              })
+            : nothing
+        }
+
+        ${
+          state.tab === "memory"
+            ? renderMemory({
+                loading: state.memoryLoading,
+                facts: state.memoryFacts,
+                error: state.memoryError,
+                filter: state.memoryFilter,
+                search: state.memorySearch,
+                editingId: state.memoryEditingId,
+                editDraft: state.memoryEditDraft,
+                extracting: state.memoryExtracting,
+                extractStatus: state.memoryExtractStatus,
+                sessionKey: state.sessionKey,
+                connected: state.connected,
+                onRefresh: () => loadMemory(state),
+                onSearch: (keyword) => {
+                  state.memorySearch = keyword;
+                  searchMemory(state, keyword);
+                },
+                onFilterChange: (cat) => (state.memoryFilter = cat),
+                onEdit: (id) => {
+                  const fact = state.memoryFacts.find((f) => f.id === id);
+                  state.memoryEditingId = id;
+                  state.memoryEditDraft = fact?.content ?? "";
+                },
+                onEditDraftChange: (draft) => (state.memoryEditDraft = draft),
+                onSave: (id, content) => {
+                  updateMemory(state, id, { content });
+                  state.memoryEditingId = null;
+                  state.memoryEditDraft = "";
+                },
+                onCancel: () => {
+                  state.memoryEditingId = null;
+                  state.memoryEditDraft = "";
+                },
+                onDelete: (id) => deleteMemory(state, id),
+                onVerify: (id, verified) => updateMemory(state, id, { verified }),
+                onExtract: (sessionKey) => extractMemory(state, sessionKey),
               })
             : nothing
         }
@@ -378,6 +468,40 @@ export function renderApp(state: AppViewState) {
                 onSaveKey: (key) => saveSkillApiKey(state, key),
                 onInstall: (skillKey, name, installId) =>
                   installSkill(state, skillKey, name, installId),
+                // Catalog props
+                catalog: getFilteredCatalog(state),
+                catalogLoading: state.skillsCatalogLoading,
+                catalogError: state.skillsCatalogError,
+                filterKind: state.skillsFilterKind,
+                search: state.skillsSearch,
+                onSearch: (keyword) => setSkillsSearch(state, keyword),
+                onFilterKindChange: (kind) => setSkillsFilterKind(state, kind),
+                onCatalogRefresh: () => loadCatalog(state),
+                onCatalogToggle: (skillId, enabled) => toggleCatalogSkill(state, skillId, enabled),
+                onCatalogSettings: (skillId) => openSkillSettings(state, skillId),
+                onCatalogInstall: (skillId) => {
+                  // Use skills.update to enable a not-installed plugin
+                  toggleCatalogSkill(state, skillId, true);
+                },
+                // Settings panel
+                settingsPanel: {
+                  open: state.skillsSettingsOpen,
+                  skillId: state.skillsSettingsSkillId,
+                  skill: state.skillsCatalog.find((s) => s.id === state.skillsSettingsSkillId) ?? null,
+                  schema: state.skillsSettingsSchema,
+                  uiHints: state.skillsSettingsUiHints,
+                  currentConfig: state.skillsSettingsCurrentConfig,
+                  loading: state.skillsSettingsLoading,
+                  saving: state.skillsSettingsSaving,
+                  formValues: state.skillsSettingsFormValues,
+                  envVars: state.skillsSettingsEnvVars,
+                  onFieldChange: (field, value) => updateSettingsField(state, field, value),
+                  onEnvChange: (index, key, value) => updateSettingsEnvVar(state, index, key, value),
+                  onEnvAdd: () => addSettingsEnvVar(state),
+                  onEnvRemove: (index) => removeSettingsEnvVar(state, index),
+                  onSave: () => saveSkillSettings(state),
+                  onClose: () => closeSkillSettings(state),
+                },
               })
             : nothing
         }

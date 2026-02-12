@@ -17,12 +17,16 @@ import type {
   HealthSnapshot,
   LogEntry,
   LogLevel,
+  MemoryCategory,
   PresenceEntry,
   ChannelsStatusSnapshot,
   SessionsListResult,
+  SkillCatalogEntry,
+  SkillCatalogKind,
   SkillStatusReport,
   StatusSummary,
   NostrProfile,
+  UserFact,
 } from "./types";
 import { type ChatAttachment, type ChatQueueItem, type CronFormState } from "./ui-types";
 import type { EventLogEntry } from "./app-events";
@@ -76,6 +80,7 @@ import {
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form";
 import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity";
 import { connectionManager, type ConnectionState } from "./connection/connection-manager";
+import { loadMemory as loadMemoryInternal } from "./controllers/memory";
 import { type SetupGuideState, createSetupGuideState } from "./views/setup-guide";
 
 declare global {
@@ -141,6 +146,8 @@ export class OpenClawApp extends LitElement {
   @state() chatThinkingLevel: string | null = null;
   @state() chatQueue: ChatQueueItem[] = [];
   @state() chatAttachments: ChatAttachment[] = [];
+  // Session switcher state
+  @state() sessionSwitcherOpen = false;
   // Model selector state
   @state() chatModelSelectorOpen = false;
   @state() chatCurrentModel = "Opus 4.5";
@@ -242,6 +249,38 @@ export class OpenClawApp extends LitElement {
   @state() skillEdits: Record<string, string> = {};
   @state() skillsBusyKey: string | null = null;
   @state() skillMessages: Record<string, SkillMessage> = {};
+  // Catalog state
+  @state() skillsCatalog: SkillCatalogEntry[] = [];
+  @state() skillsCatalogLoading = false;
+  @state() skillsCatalogError: string | null = null;
+  @state() skillsFilterKind: SkillCatalogKind | "all" | "installed" = "all";
+  @state() skillsSearch = "";
+  // Settings panel state
+  @state() skillsSettingsOpen = false;
+  @state() skillsSettingsSkillId: string | null = null;
+  @state() skillsSettingsSchema: Record<string, unknown> | null = null;
+  @state() skillsSettingsUiHints: Record<string, unknown> | null = null;
+  @state() skillsSettingsCurrentConfig: Record<string, unknown> | null = null;
+  @state() skillsSettingsLoading = false;
+  @state() skillsSettingsSaving = false;
+  @state() skillsSettingsFormValues: Record<string, unknown> = {};
+  @state() skillsSettingsEnvVars: Array<{ key: string; value: string }> = [];
+
+  @state() memoryLoading = false;
+  @state() memoryFacts: UserFact[] = [];
+  @state() memoryError: string | null = null;
+  @state() memoryFilter: MemoryCategory | "all" = "all";
+  @state() memorySearch = "";
+  @state() memoryEditingId: string | null = null;
+  @state() memoryEditDraft = "";
+  @state() memoryExtracting = false;
+  @state() memoryExtractStatus: "idle" | "extracting" | "extracted" = "idle";
+
+  // Memory indicator (chat header)
+  @state() memoryIndicatorEnabled = true;
+  @state() memoryIndicatorFacts: UserFact[] = [];
+  @state() memoryIndicatorTotal = 0;
+  @state() memoryIndicatorExpanded = false;
 
   @state() debugLoading = false;
   @state() debugStatus: StatusSummary | null = null;
@@ -366,6 +405,10 @@ export class OpenClawApp extends LitElement {
 
   async loadCron() {
     await loadCronInternal(this as unknown as Parameters<typeof loadCronInternal>[0]);
+  }
+
+  async handleLoadMemory() {
+    await loadMemoryInternal(this);
   }
 
   async handleAbortChat() {

@@ -13,11 +13,15 @@ import type {
   HealthSnapshot,
   LogEntry,
   LogLevel,
+  MemoryCategory,
   NostrProfile,
   PresenceEntry,
   SessionsListResult,
+  SkillCatalogEntry,
+  SkillCatalogKind,
   SkillStatusReport,
   StatusSummary,
+  UserFact,
 } from "./types";
 import type { ChatAttachment, ChatQueueItem, CronFormState } from "./ui-types";
 import type { EventLogEntry } from "./app-events";
@@ -58,6 +62,8 @@ export type AppViewState = {
   commandPaletteOpen: boolean;
   commandPaletteQuery: string;
   commandPaletteSelectedIndex: number;
+  // Session switcher state
+  sessionSwitcherOpen: boolean;
   // Model selector state
   chatModelSelectorOpen: boolean;
   chatCurrentModel: string;
@@ -144,6 +150,37 @@ export type AppViewState = {
   skillEdits: Record<string, string>;
   skillMessages: Record<string, SkillMessage>;
   skillsBusyKey: string | null;
+  // Catalog state
+  skillsCatalog: SkillCatalogEntry[];
+  skillsCatalogLoading: boolean;
+  skillsCatalogError: string | null;
+  skillsFilterKind: SkillCatalogKind | "all" | "installed";
+  skillsSearch: string;
+  // Settings panel state
+  skillsSettingsOpen: boolean;
+  skillsSettingsSkillId: string | null;
+  skillsSettingsSchema: Record<string, unknown> | null;
+  skillsSettingsUiHints: Record<string, unknown> | null;
+  skillsSettingsCurrentConfig: Record<string, unknown> | null;
+  skillsSettingsLoading: boolean;
+  skillsSettingsSaving: boolean;
+  skillsSettingsFormValues: Record<string, unknown>;
+  skillsSettingsEnvVars: Array<{ key: string; value: string }>;
+  memoryLoading: boolean;
+  memoryFacts: UserFact[];
+  memoryError: string | null;
+  memoryFilter: MemoryCategory | "all";
+  memorySearch: string;
+  memoryEditingId: string | null;
+  memoryEditDraft: string;
+  memoryExtracting: boolean;
+  memoryExtractStatus: "idle" | "extracting" | "extracted";
+  // Memory indicator (chat header)
+  memoryIndicatorEnabled: boolean;
+  memoryIndicatorFacts: UserFact[];
+  memoryIndicatorTotal: number;
+  memoryIndicatorExpanded: boolean;
+  handleLoadMemory: () => Promise<void>;
   debugLoading: boolean;
   debugStatus: StatusSummary | null;
   debugHealth: HealthSnapshot | null;

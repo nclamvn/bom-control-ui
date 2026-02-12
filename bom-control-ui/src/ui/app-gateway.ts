@@ -1,4 +1,5 @@
 import { loadChatHistory } from "./controllers/chat";
+import { loadMemoryIndicator } from "./controllers/memory";
 import { loadDevices } from "./controllers/devices";
 import { loadNodes } from "./controllers/nodes";
 import { loadAgents } from "./controllers/agents";
@@ -215,7 +216,10 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
         }
       }
     }
-    if (state === "final") void loadChatHistory(host as unknown as OpenClawApp);
+    if (state === "final") {
+      void loadChatHistory(host as unknown as OpenClawApp);
+      void loadMemoryIndicator(host as unknown as OpenClawApp);
+    }
     return;
   }
 
