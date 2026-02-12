@@ -115,11 +115,15 @@
   }
 
   .nav-item {
-    padding: 6px 10px;
+    padding: 10px 14px;
+    min-height: 44px;
     font-size: 12px;
     border-radius: var(--radius-md);
     white-space: nowrap;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
   }
 
   /* Content */
@@ -176,15 +180,27 @@
   .field input,
   .field textarea,
   .field select {
-    padding: 8px 10px;
+    padding: 10px 12px;
     border-radius: var(--radius-md);
-    font-size: 14px;
+    font-size: 16px;
+    min-height: 44px;
+    box-sizing: border-box;
   }
 
-  /* Buttons */
+  /* Buttons — touch target ≥44px */
   .btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .btn--sm {
     padding: 8px 12px;
-    font-size: 12px;
+    min-height: 44px;
   }
 
   /* Pills */
@@ -234,9 +250,13 @@
 
   .chat-compose__field textarea {
     min-height: 60px;
-    padding: 8px 10px;
+    padding: 10px 12px;
     border-radius: var(--radius-md);
-    font-size: 14px;
+    font-size: 16px;
+  }
+
+  .composer-input {
+    font-size: 16px;
   }
 
   /* Log stream */
@@ -348,12 +368,13 @@
   .chat-compose__field textarea {
     min-height: 52px;
     padding: 8px 10px;
-    font-size: 13px;
+    font-size: 16px;
   }
 
   .btn {
-    padding: 6px 10px;
-    font-size: 11px;
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 44px;
   }
 
   .topbar-status .pill {

@@ -416,5 +416,21 @@
 
   .chat-controls__session {
     min-width: 120px;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .chat-controls .btn.btn--sm.btn--icon {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .chat-controls__separator {
+    height: 44px;
+  }
+
+  .chat-controls select {
+    min-height: 44px;
+    font-size: 16px;
   }
 }

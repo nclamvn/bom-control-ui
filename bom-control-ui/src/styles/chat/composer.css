@@ -783,6 +783,24 @@
 
 /* ─── Responsive ─── */
 @media (max-width: 640px) {
+  .chat-composer.claude-style {
+    max-width: calc(100% - 16px);
+  }
+
+  .composer-input {
+    font-size: 16px;
+  }
+
+  .composer-icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .composer-send-btn {
+    width: 36px;
+    height: 36px;
+  }
+
   .vibecode-templates {
     width: 100%;
     max-width: 100%;

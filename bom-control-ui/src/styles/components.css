@@ -3063,3 +3063,114 @@
   outline: none;
   border-color: var(--accent);
 }
+
+/* ===========================================
+   Mobile — Components
+   =========================================== */
+
+@media (max-width: 600px) {
+  /* Session cards: single column */
+  .session-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .session-card {
+    padding: 12px;
+  }
+
+  .session-card__actions .btn {
+    min-height: 44px;
+  }
+
+  /* Memory chips: single column, compact */
+  .memory-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .memory-chip {
+    padding: 10px;
+  }
+
+  .memory-chip__content {
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+  }
+
+  .memory-chip__actions .btn {
+    min-height: 44px;
+  }
+
+  /* Skill catalog: single column */
+  .skill-catalog-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* Skill settings panel: full width overlay */
+  .skill-settings-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Env vars editor: stack inputs */
+  .env-vars-editor__row {
+    flex-wrap: wrap;
+  }
+
+  .env-vars-editor__key,
+  .env-vars-editor__value {
+    min-width: 0;
+    flex: 1 1 100%;
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  /* Filter tabs: scrollable, touch-friendly */
+  .filter-tabs,
+  .memory-filters,
+  .session-filters {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+
+  .filter-tabs::-webkit-scrollbar,
+  .memory-filters::-webkit-scrollbar,
+  .session-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-tabs .btn,
+  .memory-filters .btn,
+  .catalog-filters .btn {
+    min-height: 44px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Device status badges: touch-friendly */
+  .device-status-badge {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+  }
+
+  /* Audit timeline: compact */
+  .audit-timeline__entry {
+    padding: 8px;
+  }
+
+  /* Schema form inputs */
+  .schema-form input,
+  .schema-form select,
+  .schema-form textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+}
