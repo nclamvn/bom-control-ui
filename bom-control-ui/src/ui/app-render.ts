@@ -34,16 +34,7 @@ import type {
 import type { ChatQueueItem, CronFormState } from "./ui-types";
 import { refreshChatAvatar } from "./app-chat";
 import { renderChat } from "./views/chat";
-import { renderConfig } from "./views/config";
-import { renderChannels } from "./views/channels";
-import { renderCron } from "./views/cron";
-import { renderDebug } from "./views/debug";
-import { renderInstances } from "./views/instances";
-import { renderLogs } from "./views/logs";
-import { renderNodes } from "./views/nodes";
 import { renderOverview } from "./views/overview";
-import { renderMemory } from "./views/memory-view";
-import { renderSessions } from "./views/sessions";
 import { renderExecApprovalPrompt } from "./views/exec-approval";
 import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation";
 import { renderCommandPalette } from "./views/command-palette";
@@ -54,7 +45,7 @@ import {
   revokeDeviceToken,
   rotateDeviceToken,
 } from "./controllers/devices";
-import { renderSkills } from "./views/skills";
+import { lazyView } from "./lazy-view";
 import { renderChatControls, renderNavStatus, renderTab, renderThemeToggle } from "./app-render.helpers";
 import { loadChannels } from "./controllers/channels";
 import { loadPresence } from "./controllers/presence";
@@ -281,7 +272,7 @@ export function renderApp(state: AppViewState) {
 
         ${
           state.tab === "channels"
-            ? renderChannels({
+            ? lazyView("channels", () => import("./views/channels"), (m) => m.renderChannels({
                 connected: state.connected,
                 loading: state.channelsLoading,
                 snapshot: state.channelsSnapshot,
@@ -314,25 +305,25 @@ export function renderApp(state: AppViewState) {
                 onNostrProfileSave: () => state.handleNostrProfileSave(),
                 onNostrProfileImport: () => state.handleNostrProfileImport(),
                 onNostrProfileToggleAdvanced: () => state.handleNostrProfileToggleAdvanced(),
-              })
+              }))
             : nothing
         }
 
         ${
           state.tab === "instances"
-            ? renderInstances({
+            ? lazyView("instances", () => import("./views/instances"), (m) => m.renderInstances({
                 loading: state.presenceLoading,
                 entries: state.presenceEntries,
                 lastError: state.presenceError,
                 statusMessage: state.presenceStatus,
                 onRefresh: () => loadPresence(state),
-              })
+              }))
             : nothing
         }
 
         ${
           state.tab === "sessions"
-            ? renderSessions({
+            ? lazyView("sessions", () => import("./views/sessions"), (m) => m.renderSessions({
                 loading: state.sessionsLoading,
                 result: state.sessionsResult,
                 error: state.sessionsError,
@@ -378,13 +369,13 @@ export function renderApp(state: AppViewState) {
                 },
                 onPatch: (key, patch) => patchSession(state, key, patch),
                 onDelete: (key) => deleteSession(state, key),
-              })
+              }))
             : nothing
         }
 
         ${
           state.tab === "memory"
-            ? renderMemory({
+            ? lazyView("memory", () => import("./views/memory-view"), (m) => m.renderMemory({
                 loading: state.memoryLoading,
                 facts: state.memoryFacts,
                 error: state.memoryError,
@@ -420,13 +411,13 @@ export function renderApp(state: AppViewState) {
                 onDelete: (id) => deleteMemory(state, id),
                 onVerify: (id, verified) => updateMemory(state, id, { verified }),
                 onExtract: (sessionKey) => extractMemory(state, sessionKey),
-              })
+              }))
             : nothing
         }
 
         ${
           state.tab === "cron"
-            ? renderCron({
+            ? lazyView("cron", () => import("./views/cron"), (m) => m.renderCron({
                 loading: state.cronLoading,
                 status: state.cronStatus,
                 jobs: state.cronJobs,
@@ -447,13 +438,13 @@ export function renderApp(state: AppViewState) {
                 onRun: (job) => runCronJob(state, job),
                 onRemove: (job) => removeCronJob(state, job),
                 onLoadRuns: (jobId) => loadCronRuns(state, jobId),
-              })
+              }))
             : nothing
         }
 
         ${
           state.tab === "skills"
-            ? renderSkills({
+            ? lazyView("skills", () => import("./views/skills"), (m) => m.renderSkills({
                 loading: state.skillsLoading,
                 report: state.skillsReport,
                 error: state.skillsError,
@@ -502,13 +493,13 @@ export function renderApp(state: AppViewState) {
                   onSave: () => saveSkillSettings(state),
                   onClose: () => closeSkillSettings(state),
                 },
-              })
+              }))
             : nothing
         }
 
         ${
           state.tab === "nodes"
-            ? renderNodes({
+            ? lazyView("nodes", () => import("./views/nodes"), (m) => m.renderNodes({
                 loading: state.nodesLoading,
                 nodes: state.nodes,
                 devicesLoading: state.devicesLoading,
@@ -581,7 +572,7 @@ export function renderApp(state: AppViewState) {
                       : { kind: "gateway" as const };
                   return saveExecApprovals(state, target);
                 },
-              })
+              }))
             : nothing
         }
 
@@ -786,7 +777,7 @@ export function renderApp(state: AppViewState) {
 
         ${
           state.tab === "config"
-            ? renderConfig({
+            ? lazyView("config", () => import("./views/config"), (m) => m.renderConfig({
                 raw: state.configRaw,
                 originalRaw: state.configRawOriginal,
                 valid: state.configValid,
@@ -820,13 +811,13 @@ export function renderApp(state: AppViewState) {
                 onSave: () => saveConfig(state),
                 onApply: () => applyConfig(state),
                 onUpdate: () => runUpdate(state),
-              })
+              }))
             : nothing
         }
 
         ${
           state.tab === "debug"
-            ? renderDebug({
+            ? lazyView("debug", () => import("./views/debug"), (m) => m.renderDebug({
                 loading: state.debugLoading,
                 status: state.debugStatus,
                 health: state.debugHealth,
@@ -841,13 +832,13 @@ export function renderApp(state: AppViewState) {
                 onCallParamsChange: (next) => (state.debugCallParams = next),
                 onRefresh: () => loadDebug(state),
                 onCall: () => callDebugMethod(state),
-              })
+              }))
             : nothing
         }
 
         ${
           state.tab === "logs"
-            ? renderLogs({
+            ? lazyView("logs", () => import("./views/logs"), (m) => m.renderLogs({
                 loading: state.logsLoading,
                 error: state.logsError,
                 file: state.logsFile,
@@ -864,7 +855,7 @@ export function renderApp(state: AppViewState) {
                 onRefresh: () => loadLogs(state, { reset: true }),
                 onExport: (lines, label) => state.exportLogs(lines, label),
                 onScroll: (event) => state.handleLogsScroll(event),
-              })
+              }))
             : nothing
         }
       </main>
