@@ -1,6 +1,6 @@
 # HANDOVER - Bờm Workspace 👻
 
-> Cập nhật: 2026-02-09
+> Cập nhật: 2026-02-12
 
 ## Tổng quan
 
@@ -16,7 +16,7 @@ Workspace này chứa toàn bộ hệ sinh thái: identity, memory, UI, fork Vi�
 | Thành phần | Trạng thái | Ghi chú |
 |-----------|-----------|---------|
 | Bờm Identity | ✅ Hoàn tất | SOUL, IDENTITY, AGENTS, memory system |
-| bom-control-ui | ✅ Hoạt động | Chat UI, API key, auto-reconnect |
+| bom-control-ui | ✅ Hoạt động | Chat, Sessions, Memory, Device Guard, Skills — 368 tests, 0 failures |
 | openclaw-vietnam | ✅ Hoàn tất | Fork Việt hóa, Vibecode tools |
 | apple-showcase | ✅ Demo | Next.js Apple-style product showcase |
 | projects/ (3 demo) | ✅ Demo | Vibecode output: finance, blog, store |
@@ -102,6 +102,10 @@ clawd/                          ← Root workspace
 - Split panel layout (Claude-style)
 - Device auth + session key management
 - Refined minimal UI: 2-group sidebar (Core + Admin), flat monochrome bg, bar indicators
+- **Session UX** — card/table views, inline editing, quick-resume switcher
+- **Memory System** — UserFact store, LLM extraction, category filter, search, chat indicator
+- **Device Guard** — pairing approval, token lifecycle, audit timeline, status badges
+- **Skill System** — catalog browser, filter/search, settings panel (JSON Schema → form), env vars
 
 **Cách chạy:**
 ```bash
@@ -227,8 +231,11 @@ Hệ thống files cho AI agent persistence:
 ## Commits (main branch)
 
 ```
+e4b8e46 Bom Ecosystem Feb 2026: Session UX, Memory, Device Guard, Skill System
+bc0ce7b Project x-ray: update HANDOVER.md and add memory log 2026-02-09
 234e40a Update HANDOVER.md with refined minimal UI changes
 a14b2a1 Refined minimal UI: simplify sidebar to 2 groups, flatten bg, modernize styles
+513f8de Update HANDOVER.md
 f213410 Add design skills suite: frontend-design, theme-factory, canvas-design
 2a18956 Update HANDOVER.md with latest changes and project status
 19a76cd Add README with Vibecode Kit methodology and Vietnamese-first focus
@@ -239,18 +246,27 @@ db608e1 Initial commit: Bờm workspace + Control UI
 
 ---
 
+## Feb 2026 Development Cycle (Hoàn tất)
+
+4 feature tracks, 10 phases, 53 files changed (+6414 lines), 368 UI tests (30 files), 0 failures.
+
+| Feature | Trạng thái | Highlights |
+|---------|-----------|------------|
+| Session UX | ✅ | Card/table views, session switcher, inline editing, token tracking |
+| Memory System | ✅ | UserFact CRUD, LLM extraction, category filter, search, chat indicator |
+| Device Guard | ✅ | 10/10 gaps filled — pairing, tokens, audit, CORS, IP, scopes |
+| Skill System | ✅ | `skills.catalog` + `skills.configSchema` RPCs, catalog UI, settings panel |
+
 ## Việc cần làm (TODO)
 
 ### bom-control-ui
-- [ ] Test edge cases: offline, token expired, invalid API key feedback
-- [ ] Unit tests cho device-auth.ts
-- [ ] Optimize bundle size
 - [ ] Mobile responsive testing
+- [ ] Optimize bundle size
+- [ ] E2E tests (Playwright — screenshot baselines exist but not CI-integrated)
 
 ### Workspace
 - [ ] Thêm project types cho Vibecode skill (landing, saas, dashboard)
 - [ ] Điền thêm TOOLS.md (machines, SSH, preferences)
-- [ ] Tạo thêm daily memory logs
 - [ ] Cấu hình BOOT.md cho gateway startup tasks
 
 ### openclaw-vietnam
