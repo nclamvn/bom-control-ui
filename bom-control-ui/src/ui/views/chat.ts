@@ -1,5 +1,5 @@
-import { html, nothing } from "lit";
-import { ref } from "lit/directives/ref.js";
+import { html, nothing, type TemplateResult } from "lit";
+import { ref, createRef } from "lit/directives/ref.js";
 import { repeat } from "lit/directives/repeat.js";
 import type { SessionsListResult } from "../types";
 import type { ChatAttachment, ChatQueueItem } from "../ui-types";
@@ -14,6 +14,9 @@ import {
 } from "../chat/grouped-render";
 import { renderMarkdownSidebar } from "./markdown-sidebar";
 import "../components/resizable-divider";
+import { renderAgentTabs, type AgentTabsProps } from "../components/agent-tabs";
+import type { AgentTab, AgentPreset } from "../controllers/agent-tabs";
+import { renderSplitView } from "../components/split-view";
 
 export type CompactionIndicatorStatus = {
   active: boolean;
@@ -83,10 +86,15 @@ export type ChatProps = {
   apiKeySaveStatus?: 'idle' | 'saving' | 'saved' | 'error';
   apiKeyInputOpen?: boolean;
   onToggleApiKeyInput?: () => void;
-  // Voice recording
+  // Voice input & TTS
   isRecording?: boolean;
-  onStartRecording?: () => void;
-  onStopRecording?: () => void;
+  voiceSupported?: boolean;
+  voiceInterimTranscript?: string;
+  voiceMode?: "idle" | "listening" | "speaking";
+  ttsEnabled?: boolean;
+  ttsSupported?: boolean;
+  onToggleVoice?: () => void;
+  onToggleTts?: () => void;
   // Quick actions
   quickActions?: QuickAction[];
   onQuickAction?: (action: QuickAction) => void;
@@ -102,6 +110,26 @@ export type ChatProps = {
   onCloseSidebar?: () => void;
   onSplitRatioChange?: (ratio: number) => void;
   onChatScroll?: (event: Event) => void;
+  // Agent tabs
+  agentTabs?: AgentTab[];
+  activeTabSessionKey?: string;
+  agentPresetPickerOpen?: boolean;
+  onTabSelect?: (sessionKey: string) => void;
+  onTabClose?: (sessionKey: string) => void;
+  onTabRename?: (sessionKey: string, label: string) => void;
+  onNewTab?: () => void;
+  onPresetSelect?: (preset: AgentPreset) => void;
+  onPresetPickerClose?: () => void;
+  // Split view (dual-pane)
+  onTabPin?: (sessionKey: string) => void;
+  onTabUnpin?: (sessionKey: string) => void;
+  splitActive?: boolean;
+  splitViewRatio?: number;
+  focusedPane?: "left" | "right";
+  pinnedTabs?: AgentTab[];
+  onSplitResize?: (ratio: number) => void;
+  onPaneFocus?: (pane: "left" | "right") => void;
+  renderPaneChat?: (sessionKey: string) => TemplateResult;
 };
 
 const COMPACTION_TOAST_DURATION_MS = 5000;
@@ -565,6 +593,8 @@ function renderApiKeyBanner(props: ChatProps) {
   `;
 }
 
+const fileInputRef = createRef<HTMLInputElement>();
+
 export function renderChat(props: ChatProps) {
   const canCompose = props.connected;
   const isBusy = props.sending || props.stream !== null;
@@ -658,6 +688,33 @@ export function renderChat(props: ChatProps) {
           : nothing
       }
 
+      ${props.agentTabs && props.agentTabs.length > 0 && props.onTabSelect
+        ? renderAgentTabs({
+            tabs: props.agentTabs,
+            activeSessionKey: props.activeTabSessionKey ?? props.sessionKey,
+            connected: props.connected,
+            presetPickerOpen: props.agentPresetPickerOpen ?? false,
+            onTabSelect: props.onTabSelect,
+            onTabClose: props.onTabClose ?? (() => {}),
+            onTabRename: props.onTabRename ?? (() => {}),
+            onNewTab: props.onNewTab ?? (() => {}),
+            onPresetSelect: props.onPresetSelect ?? (() => {}),
+            onPresetPickerClose: props.onPresetPickerClose ?? (() => {}),
+            onTabPin: props.onTabPin,
+            onTabUnpin: props.onTabUnpin,
+          })
+        : nothing}
+
+      ${props.splitActive && props.pinnedTabs && props.pinnedTabs.length === 2 && props.renderPaneChat
+        ? renderSplitView({
+            leftPane: props.renderPaneChat(props.pinnedTabs[0].sessionKey),
+            rightPane: props.renderPaneChat(props.pinnedTabs[1].sessionKey),
+            splitRatio: props.splitViewRatio ?? 0.5,
+            focusedPane: props.focusedPane ?? "left",
+            onResize: (ratio) => props.onSplitResize?.(ratio),
+            onPaneFocus: (pane) => props.onPaneFocus?.(pane),
+          })
+        : html`
       <div
         class="chat-split-container ${sidebarOpen ? "chat-split-container--open" : ""}"
       >
@@ -704,6 +761,10 @@ export function renderChat(props: ChatProps) {
           <div class="chat-composer claude-style">
         ${renderAttachmentPreview(props)}
 
+        ${props.voiceInterimTranscript ? html`
+          <div class="voice-transcript">${props.voiceInterimTranscript}</div>
+        ` : nothing}
+
         <div class="composer-main">
           <textarea
             class="composer-input"
@@ -731,7 +792,7 @@ export function renderChat(props: ChatProps) {
             <div class="composer-toolbar__left">
               <input
                 type="file"
-                id="composer-file-input"
+                ${ref(fileInputRef)}
                 accept="image/*"
                 multiple
                 style="display: none"
@@ -764,27 +825,33 @@ export function renderChat(props: ChatProps) {
                 title="${t().chat.attachImage}"
                 ?disabled=${!props.connected}
                 @click=${() => {
-                  const input = document.getElementById('composer-file-input') as HTMLInputElement;
-                  input?.click();
+                  fileInputRef.value?.click();
                 }}
               >
                 ${icons.plus}
               </button>
+              ${props.voiceSupported !== false ? html`
               <button
-                class="composer-icon-btn ${props.isRecording ? 'recording' : ''}"
+                class="composer-icon-btn ${props.voiceMode === 'listening' ? 'recording' : props.voiceMode === 'speaking' ? 'speaking' : ''}"
                 type="button"
-                title="${props.isRecording ? t().chat.stopRecording : t().chat.voiceInput}"
+                title="${props.voiceMode === 'listening' ? t().chat.stopRecording : props.voiceMode === 'speaking' ? t().chat.voiceSpeaking : t().chat.voiceInput}"
                 ?disabled=${!props.connected}
-                @click=${() => {
-                  if (props.isRecording && props.onStopRecording) {
-                    props.onStopRecording();
-                  } else if (props.onStartRecording) {
-                    props.onStartRecording();
-                  }
-                }}
+                @click=${() => props.onToggleVoice?.()}
               >
-                ${icons.mic}
+                ${props.voiceMode === "speaking" ? icons.volume2 : icons.mic}
               </button>
+              ` : nothing}
+              ${props.ttsSupported ? html`
+              <button
+                class="composer-icon-btn ${props.ttsEnabled ? 'tts-active' : ''}"
+                type="button"
+                title="${props.ttsEnabled ? t().chat.ttsOff : t().chat.ttsOn}"
+                ?disabled=${!props.connected}
+                @click=${() => props.onToggleTts?.()}
+              >
+                ${props.ttsEnabled ? icons.volume2 : icons.volumeX}
+              </button>
+              ` : nothing}
               <button
                 class="composer-icon-btn"
                 type="button"
@@ -849,6 +916,7 @@ export function renderChat(props: ChatProps) {
             : nothing
         }
       </div>
+    `}
     </section>
   `;
 }

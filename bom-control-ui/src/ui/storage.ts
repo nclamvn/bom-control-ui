@@ -2,6 +2,7 @@ const KEY = "openclaw.control.settings.v1";
 
 import type { ThemeMode } from "./theme";
 import { setLanguage as setI18nLanguage } from "./i18n";
+import type { AgentTab } from "./controllers/agent-tabs";
 
 export type Language = "vi" | "en";
 
@@ -18,6 +19,7 @@ export type UiSettings = {
   navCollapsed: boolean; // Collapsible sidebar state
   navGroupsCollapsed: Record<string, boolean>; // Which nav groups are collapsed
   sessionsViewMode: "table" | "cards";
+  agentTabs: AgentTab[]; // Persisted without unreadCount (starts at 0)
 };
 
 export function loadSettings(): UiSettings {
@@ -45,6 +47,7 @@ export function loadSettings(): UiSettings {
     navCollapsed: false,
     navGroupsCollapsed: {},
     sessionsViewMode: "table",
+    agentTabs: [],
   };
 
   try {
@@ -110,6 +113,16 @@ export function loadSettings(): UiSettings {
         parsed.sessionsViewMode === "table" || parsed.sessionsViewMode === "cards"
           ? parsed.sessionsViewMode
           : defaults.sessionsViewMode,
+      agentTabs:
+        Array.isArray(parsed.agentTabs)
+          ? (parsed.agentTabs as AgentTab[]).map((t) => ({
+              sessionKey: typeof t.sessionKey === "string" ? t.sessionKey : "",
+              label: typeof t.label === "string" ? t.label : "",
+              preset: typeof t.preset === "string" ? t.preset : "custom",
+              unreadCount: 0, // always reset on load
+              ...(t.pinned ? { pinned: true as const } : {}),
+            } as AgentTab)).filter((t) => t.sessionKey)
+          : defaults.agentTabs,
     };
     setI18nLanguage(settings.language);
     return settings;

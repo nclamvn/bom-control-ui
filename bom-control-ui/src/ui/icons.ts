@@ -224,6 +224,20 @@ export const icons = {
     </svg>
   `,
   // Composer icons
+  volume2: html`
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+  `,
+  volumeX: html`
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <line x1="23" x2="17" y1="9" y2="15" />
+      <line x1="17" x2="23" y1="9" y2="15" />
+    </svg>
+  `,
   mic: html`
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
@@ -420,6 +434,12 @@ export const icons = {
       <rect width="7" height="7" x="14" y="3" rx="1" />
       <rect width="7" height="7" x="14" y="14" rx="1" />
       <rect width="7" height="7" x="3" y="14" rx="1" />
+    </svg>
+  `,
+  pin: html`
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" x2="12" y1="17" y2="22" />
+      <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" />
     </svg>
   `,
   layoutList: html`

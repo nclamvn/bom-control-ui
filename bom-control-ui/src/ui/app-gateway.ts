@@ -14,6 +14,8 @@ import { handleAgentEvent, resetToolStream, type AgentEventPayload } from "./app
 import { CHAT_SESSIONS_ACTIVE_MINUTES, flushChatQueueForEvent } from "./app-chat";
 import { applySettings, loadCron, refreshActiveTab, setLastActiveSessionKey } from "./app-settings";
 import { handleChatEvent, type ChatEventPayload } from "./controllers/chat";
+import { speakText } from "./controllers/voice";
+import { extractText } from "./chat/message-extract";
 import {
   addExecApproval,
   parseExecApprovalRequested,
@@ -24,6 +26,7 @@ import type { OpenClawApp } from "./app";
 import type { ExecApprovalRequest } from "./controllers/exec-approval";
 import { loadAssistantIdentity } from "./controllers/assistant-identity";
 import { loadSessions } from "./controllers/sessions";
+import { incrementUnread } from "./controllers/agent-tabs";
 
 type GatewayHost = {
   settings: UiSettings;
@@ -202,6 +205,13 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
         payload.sessionKey,
       );
     }
+    // Track unread for non-active agent tabs
+    if (payload?.sessionKey && payload.sessionKey !== host.sessionKey && payload.state === "final") {
+      const app = host as unknown as OpenClawApp;
+      if (app.agentTabs?.some((tab) => tab.sessionKey === payload.sessionKey)) {
+        app.agentTabs = incrementUnread(app.agentTabs, payload.sessionKey);
+      }
+    }
     const state = handleChatEvent(host as unknown as OpenClawApp, payload);
     if (state === "final" || state === "error" || state === "aborted") {
       resetToolStream(host as unknown as Parameters<typeof resetToolStream>[0]);
@@ -219,6 +229,15 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
     if (state === "final") {
       void loadChatHistory(host as unknown as OpenClawApp);
       void loadMemoryIndicator(host as unknown as OpenClawApp);
+      // TTS: speak the final response if enabled
+      if ((host as unknown as OpenClawApp).ttsEnabled && payload?.message) {
+        const text = extractText(payload.message);
+        if (text) {
+          speakText(text, (mode) => {
+            (host as unknown as OpenClawApp).voiceMode = mode;
+          });
+        }
+      }
     }
     return;
   }

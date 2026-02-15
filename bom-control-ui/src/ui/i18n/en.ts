@@ -206,6 +206,11 @@ export const en = {
     stopRecording: "Stop recording",
     voiceInput: "Voice input",
     microphoneError: "Cannot access microphone",
+    voiceError: "Voice recognition error",
+    voiceListening: "Listening...",
+    voiceSpeaking: "Speaking...",
+    ttsOn: "Enable voice response",
+    ttsOff: "Disable voice response",
 
     // Send button
     stop: "Stop",
@@ -1150,6 +1155,30 @@ export const en = {
     showAdvanced: "Show advanced",
     hideAdvanced: "Hide advanced",
     unsavedChanges: "You have unsaved changes",
+  },
+
+  // ============================================
+  // AGENT TABS
+  // ============================================
+  agentTabs: {
+    newTab: "New tab",
+    closeTab: "Close tab",
+    closeConfirm: "Close this tab? The session will be archived.",
+    rename: "Rename",
+    presets: {
+      title: "Choose agent type",
+      code: "Code",
+      writer: "Writer",
+      research: "Research",
+      translator: "Translator",
+      custom: "Custom",
+    },
+    unread: "unread",
+    pin: "Pin tab",
+    unpin: "Unpin tab",
+    splitView: "Split view",
+    focusLeft: "Focus left pane",
+    focusRight: "Focus right pane",
   },
 } as const;
 

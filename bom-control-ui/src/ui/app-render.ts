@@ -48,6 +48,7 @@ import {
 import { lazyView } from "./lazy-view";
 import { renderChatControls, renderNavStatus, renderTab, renderThemeToggle } from "./app-render.helpers";
 import { loadChannels } from "./controllers/channels";
+import { toggleVoiceInput, stopTts, type VoiceHostCallbacks } from "./controllers/voice";
 import { loadPresence } from "./controllers/presence";
 import { deleteSession, loadSessions, patchSession } from "./controllers/sessions";
 import {
@@ -79,6 +80,18 @@ import {
 } from "./controllers/memory";
 import { loadNodes } from "./controllers/nodes";
 import { loadChatHistory } from "./controllers/chat";
+import {
+  createTab,
+  removeTab,
+  switchTab,
+  renameTab,
+  pinTab,
+  unpinTab,
+  getPinnedTabs,
+  isSplitActive,
+  serializeTabsForStorage,
+  type AgentPreset,
+} from "./controllers/agent-tabs";
 import {
   applyConfig,
   loadConfig,
@@ -711,48 +724,45 @@ export function renderApp(state: AppViewState) {
                 onApiKeyChange: (provider: string, key: string) => {
                   state.chatApiKeys = { ...state.chatApiKeys, [provider]: key };
                 },
-                // Voice recording
+                // Voice input (STT via Web Speech API)
                 isRecording: state.chatIsRecording,
-                onStartRecording: async () => {
-                  try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    const mediaRecorder = new MediaRecorder(stream);
-                    const audioChunks: Blob[] = [];
-
-                    mediaRecorder.ondataavailable = (event) => {
-                      if (event.data.size > 0) {
-                        audioChunks.push(event.data);
+                voiceSupported: (state as any).voiceSupported ?? false,
+                voiceInterimTranscript: (state as any).voiceInterimTranscript ?? "",
+                voiceMode: (state as any).voiceMode ?? "idle",
+                ttsEnabled: (state as any).ttsEnabled ?? false,
+                ttsSupported: (state as any).ttsSupported ?? false,
+                onToggleVoice: () => {
+                  // Cancel TTS when user starts speaking
+                  stopTts();
+                  const host: VoiceHostCallbacks = {
+                    setMode: (mode) => {
+                      state.chatIsRecording = mode === "listening";
+                      (state as any).voiceMode = mode;
+                    },
+                    setInterimTranscript: (text) => {
+                      (state as any).voiceInterimTranscript = text;
+                    },
+                    setDraft: (text) => {
+                      state.chatMessage = text;
+                    },
+                    getDraft: () => state.chatMessage,
+                    setError: (msg) => {
+                      state.lastError = msg;
+                    },
+                    sendMessage: () => {
+                      if (state.chatMessage.trim()) {
+                        state.handleSendChat();
                       }
-                    };
-
-                    mediaRecorder.onstop = async () => {
-                      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                      stream.getTracks().forEach(track => track.stop());
-
-                      // TODO: Send audio to speech-to-text API
-                      // Convert to base64 for potential API use
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        // TODO: Call transcription API and set result to state.chatMessage
-                      };
-                      reader.readAsDataURL(audioBlob);
-                    };
-
-                    mediaRecorder.start();
-                    (state as any).mediaRecorder = mediaRecorder;
-                    (state as any).audioChunks = audioChunks;
-                    state.chatIsRecording = true;
-                  } catch (err) {
-                    console.error('Failed to start recording:', err);
-                    state.lastError = t().chat.microphoneError;
-                  }
+                    },
+                  };
+                  toggleVoiceInput(host);
                 },
-                onStopRecording: () => {
-                  const mediaRecorder = (state as any).mediaRecorder as MediaRecorder | null;
-                  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                    mediaRecorder.stop();
+                onToggleTts: () => {
+                  (state as any).ttsEnabled = !(state as any).ttsEnabled;
+                  if (!(state as any).ttsEnabled) {
+                    stopTts();
+                    (state as any).voiceMode = "idle";
                   }
-                  state.chatIsRecording = false;
                 },
                 onSaveApiKey: async (provider: string, key: string) => {
                   state.chatApiKeys = { ...state.chatApiKeys, [provider]: key };
@@ -770,6 +780,150 @@ export function renderApp(state: AppViewState) {
                     state.lastError = `Failed to save API key: ${err instanceof Error ? err.message : err}`;
                   }
                   setTimeout(() => { state.chatApiKeySaveStatus = 'idle'; }, 3000);
+                },
+                // Agent tabs props
+                agentTabs: state.agentTabs,
+                activeTabSessionKey: state.sessionKey,
+                agentPresetPickerOpen: state.agentPresetPickerOpen,
+                onTabSelect: (sessionKey: string) => {
+                  if (sessionKey === state.sessionKey) return;
+                  state.agentTabs = switchTab(state.agentTabs, sessionKey);
+                  state.sessionKey = sessionKey;
+                  state.chatMessage = "";
+                  state.chatAttachments = [];
+                  state.chatStream = null;
+                  (state as any).chatStreamStartedAt = null;
+                  state.chatRunId = null;
+                  state.chatQueue = [];
+                  state.resetToolStream();
+                  state.resetChatScroll();
+                  state.applySettings({
+                    ...state.settings,
+                    sessionKey,
+                    lastActiveSessionKey: sessionKey,
+                    agentTabs: serializeTabsForStorage(state.agentTabs),
+                  });
+                  void state.loadAssistantIdentity();
+                  void loadChatHistory(state);
+                  void refreshChatAvatar(state);
+                },
+                onTabClose: (sessionKey: string) => {
+                  if (!confirm(t().agentTabs.closeConfirm)) return;
+                  const remaining = removeTab(state.agentTabs, sessionKey);
+                  state.agentTabs = remaining;
+                  // Switch to adjacent tab if closing the active one
+                  if (sessionKey === state.sessionKey && remaining.length > 0) {
+                    const next = remaining[0].sessionKey;
+                    state.sessionKey = next;
+                    state.chatMessage = "";
+                    state.chatAttachments = [];
+                    state.chatStream = null;
+                    (state as any).chatStreamStartedAt = null;
+                    state.chatRunId = null;
+                    state.chatQueue = [];
+                    state.resetToolStream();
+                    state.resetChatScroll();
+                    state.applySettings({
+                      ...state.settings,
+                      sessionKey: next,
+                      lastActiveSessionKey: next,
+                      agentTabs: serializeTabsForStorage(remaining),
+                    });
+                    void state.loadAssistantIdentity();
+                    void loadChatHistory(state);
+                    void refreshChatAvatar(state);
+                  } else {
+                    state.applySettings({
+                      ...state.settings,
+                      agentTabs: serializeTabsForStorage(remaining),
+                    });
+                  }
+                },
+                onTabRename: (sessionKey: string, label: string) => {
+                  state.agentTabs = renameTab(state.agentTabs, sessionKey, label);
+                  state.applySettings({
+                    ...state.settings,
+                    agentTabs: serializeTabsForStorage(state.agentTabs),
+                  });
+                  // Also patch the session label on the gateway
+                  if (state.client && state.connected) {
+                    void state.client.request("sessions.patch", { key: sessionKey, label });
+                  }
+                },
+                onNewTab: () => {
+                  state.agentPresetPickerOpen = !state.agentPresetPickerOpen;
+                },
+                onPresetSelect: (preset: AgentPreset) => {
+                  const tab = createTab(preset);
+                  state.agentTabs = [...state.agentTabs, tab];
+                  state.agentPresetPickerOpen = false;
+                  // Switch to the new tab
+                  state.sessionKey = tab.sessionKey;
+                  state.chatMessage = "";
+                  state.chatAttachments = [];
+                  state.chatStream = null;
+                  (state as any).chatStreamStartedAt = null;
+                  state.chatRunId = null;
+                  state.chatQueue = [];
+                  state.resetToolStream();
+                  state.resetChatScroll();
+                  state.applySettings({
+                    ...state.settings,
+                    sessionKey: tab.sessionKey,
+                    lastActiveSessionKey: tab.sessionKey,
+                    agentTabs: serializeTabsForStorage(state.agentTabs),
+                  });
+                  void state.loadAssistantIdentity();
+                  void loadChatHistory(state);
+                  void refreshChatAvatar(state);
+                },
+                onPresetPickerClose: () => {
+                  state.agentPresetPickerOpen = false;
+                },
+                // Split view props
+                onTabPin: (sessionKey: string) => {
+                  state.agentTabs = pinTab(state.agentTabs, sessionKey);
+                  state.applySettings({
+                    ...state.settings,
+                    agentTabs: serializeTabsForStorage(state.agentTabs),
+                  });
+                },
+                onTabUnpin: (sessionKey: string) => {
+                  state.agentTabs = unpinTab(state.agentTabs, sessionKey);
+                  state.applySettings({
+                    ...state.settings,
+                    agentTabs: serializeTabsForStorage(state.agentTabs),
+                  });
+                },
+                splitActive: isSplitActive(state.agentTabs),
+                splitViewRatio: state.splitRatio,
+                focusedPane: state.focusedPane,
+                pinnedTabs: getPinnedTabs(state.agentTabs),
+                onSplitResize: (ratio: number) => {
+                  state.splitRatio = ratio;
+                },
+                onPaneFocus: (pane: "left" | "right") => {
+                  state.focusedPane = pane;
+                  const pinned = getPinnedTabs(state.agentTabs);
+                  const targetTab = pane === "left" ? pinned[0] : pinned[1];
+                  if (targetTab && targetTab.sessionKey !== state.sessionKey) {
+                    state.sessionKey = targetTab.sessionKey;
+                    state.chatMessage = "";
+                    state.chatAttachments = [];
+                    void state.loadAssistantIdentity();
+                    void loadChatHistory(state);
+                    void refreshChatAvatar(state);
+                  }
+                },
+                renderPaneChat: (sessionKey: string) => {
+                  // Render chat thread for a given session (reuse existing chat render)
+                  return html`<div class="chat-main" style="flex: 1 1 100%">
+                    <div class="chat-body">
+                      <div class="chat-body__messages" role="log" aria-live="polite">
+                        <p class="chat-body__placeholder">${sessionKey}</p>
+                      </div>
+                    </div>
+                  </div>`;
                 },
               })
             : nothing

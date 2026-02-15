@@ -2325,6 +2325,288 @@
 }
 
 /* ===========================================
+   Agent Tabs (Multi-session tab bar)
+   =========================================== */
+
+.agent-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary, var(--card));
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.agent-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.agent-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 12px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: background var(--duration-fast, 0.1s) ease, border-color var(--duration-fast, 0.1s) ease;
+  user-select: none;
+  font-size: 0.85rem;
+  color: var(--text-secondary, var(--fg-muted));
+}
+
+.agent-tab:hover {
+  background: var(--bg-hover, rgba(128, 128, 128, 0.08));
+}
+
+.agent-tab--active {
+  border-bottom-color: var(--accent, var(--primary));
+  color: var(--text-primary, var(--fg));
+  font-weight: 500;
+}
+
+.agent-tab__icon {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.agent-tab__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.agent-tab__label {
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agent-tab__label[contenteditable="true"] {
+  outline: 1px solid var(--accent, var(--primary));
+  border-radius: 2px;
+  padding: 0 2px;
+  min-width: 40px;
+}
+
+.agent-tab__unread {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 9px;
+  background: var(--accent, var(--primary));
+  color: var(--bg, #fff);
+  flex-shrink: 0;
+}
+
+.agent-tab__pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--text-secondary, var(--fg-muted));
+  opacity: 0;
+  transition: opacity var(--duration-fast, 0.1s) ease, background var(--duration-fast, 0.1s) ease;
+  flex-shrink: 0;
+}
+
+.agent-tab__pin svg {
+  width: 14px;
+  height: 14px;
+}
+
+.agent-tab:hover .agent-tab__pin {
+  opacity: 0.6;
+}
+
+.agent-tab__pin:hover {
+  opacity: 1 !important;
+  background: var(--bg-hover, rgba(128, 128, 128, 0.12));
+}
+
+.agent-tab--pinned .agent-tab__pin {
+  opacity: 0.8;
+  color: var(--accent, var(--primary));
+}
+
+@media (max-width: 768px) {
+  .agent-tab__pin {
+    display: none;
+  }
+}
+
+.agent-tab__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--text-secondary, var(--fg-muted));
+  opacity: 0;
+  transition: opacity var(--duration-fast, 0.1s) ease, background var(--duration-fast, 0.1s) ease;
+  flex-shrink: 0;
+}
+
+.agent-tab__close svg {
+  width: 14px;
+  height: 14px;
+}
+
+.agent-tab:hover .agent-tab__close {
+  opacity: 0.6;
+}
+
+.agent-tab__close:hover {
+  opacity: 1 !important;
+  background: var(--bg-hover, rgba(128, 128, 128, 0.12));
+}
+
+.agent-tab__add-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.agent-tab__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-secondary, var(--fg-muted));
+  transition: color var(--duration-fast, 0.1s) ease;
+}
+
+.agent-tab__add:hover:not(:disabled) {
+  color: var(--text-primary, var(--fg));
+}
+
+.agent-tab__add:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.agent-tab__add svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Preset Picker Dropdown */
+.agent-preset-picker {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  min-width: 180px;
+  background: var(--card, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.15));
+  padding: 6px;
+  animation: rise 0.15s ease-out;
+}
+
+.agent-preset-picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary, var(--fg-muted));
+}
+
+.agent-preset-picker__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-secondary, var(--fg-muted));
+  border-radius: 4px;
+}
+
+.agent-preset-picker__close:hover {
+  background: var(--bg-hover, rgba(128, 128, 128, 0.08));
+}
+
+.agent-preset-picker__close svg {
+  width: 14px;
+  height: 14px;
+}
+
+.agent-preset-picker__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.agent-preset-picker__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  min-height: 36px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-primary, var(--fg));
+  border-radius: var(--radius-sm, 4px);
+  transition: background var(--duration-fast, 0.1s) ease;
+  width: 100%;
+  text-align: left;
+}
+
+.agent-preset-picker__item:hover {
+  background: var(--bg-hover, rgba(128, 128, 128, 0.08));
+}
+
+.agent-preset-picker__icon {
+  display: flex;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.agent-preset-picker__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===========================================
    Session Switcher (Popover)
    =========================================== */
 

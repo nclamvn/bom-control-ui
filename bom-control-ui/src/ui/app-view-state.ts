@@ -30,6 +30,7 @@ import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exe
 import type { DevicePairingList } from "./controllers/devices";
 import type { ExecApprovalRequest } from "./controllers/exec-approval";
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form";
+import type { AgentTab } from "./controllers/agent-tabs";
 
 export type AppViewState = {
   settings: UiSettings;
@@ -64,6 +65,11 @@ export type AppViewState = {
   commandPaletteSelectedIndex: number;
   // Session switcher state
   sessionSwitcherOpen: boolean;
+  // Agent tabs state
+  agentTabs: AgentTab[];
+  agentPresetPickerOpen: boolean;
+  // Split view state
+  focusedPane: "left" | "right";
   // Model selector state
   chatModelSelectorOpen: boolean;
   chatCurrentModel: string;
@@ -71,8 +77,13 @@ export type AppViewState = {
   chatApiKeys: Record<string, string>;
   chatApiKeyInputOpen: boolean;
   chatApiKeySaveStatus: 'idle' | 'saving' | 'saved' | 'error';
-  // Voice recording state
+  // Voice state
   chatIsRecording: boolean;
+  voiceInterimTranscript: string;
+  voiceSupported: boolean;
+  voiceMode: "idle" | "listening" | "speaking";
+  ttsEnabled: boolean;
+  ttsSupported: boolean;
   // Sidebar state for split panel
   sidebarOpen: boolean;
   sidebarContent: string | null;

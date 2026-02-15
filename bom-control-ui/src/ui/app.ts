@@ -82,6 +82,7 @@ import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./contro
 import { connectionManager, type ConnectionState } from "./connection/connection-manager";
 import { loadMemory as loadMemoryInternal } from "./controllers/memory";
 import { type SetupGuideState, createSetupGuideState } from "./views/setup-guide";
+import type { AgentTab } from "./controllers/agent-tabs";
 
 declare global {
   interface Window {
@@ -148,6 +149,11 @@ export class OpenClawApp extends LitElement {
   @state() chatAttachments: ChatAttachment[] = [];
   // Session switcher state
   @state() sessionSwitcherOpen = false;
+  // Agent tabs state
+  @state() agentTabs: AgentTab[] = this.settings.agentTabs ?? [];
+  @state() agentPresetPickerOpen = false;
+  // Split view state
+  @state() focusedPane: "left" | "right" = "left";
   // Model selector state
   @state() chatModelSelectorOpen = false;
   @state() chatCurrentModel = "Opus 4.5";
@@ -155,8 +161,13 @@ export class OpenClawApp extends LitElement {
   @state() chatApiKeys: Record<string, string> = {};
   @state() chatApiKeyInputOpen = false;
   @state() chatApiKeySaveStatus: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
-  // Voice recording state
+  // Voice state
   @state() chatIsRecording = false;
+  @state() voiceInterimTranscript = "";
+  @state() voiceSupported = false;
+  @state() voiceMode: "idle" | "listening" | "speaking" = "idle";
+  @state() ttsEnabled = false;
+  @state() ttsSupported = false;
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
   // Sidebar state for tool output viewing
@@ -337,6 +348,16 @@ export class OpenClawApp extends LitElement {
     connectionManager.subscribe((state) => {
       this.connectionState = state;
     });
+    // Detect voice/TTS support
+    const w = window as unknown as Record<string, unknown>;
+    this.voiceSupported = !!(w.SpeechRecognition ?? w.webkitSpeechRecognition);
+    this.ttsSupported = typeof speechSynthesis !== "undefined" && speechSynthesis.getVoices().some((v) => v.lang.startsWith("vi"));
+    // Some browsers load voices async — re-check on voiceschanged
+    if (typeof speechSynthesis !== "undefined") {
+      speechSynthesis.addEventListener("voiceschanged", () => {
+        this.ttsSupported = speechSynthesis.getVoices().some((v) => v.lang.startsWith("vi"));
+      });
+    }
     handleConnected(this as unknown as Parameters<typeof handleConnected>[0]);
   }
 

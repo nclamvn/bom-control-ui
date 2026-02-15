@@ -207,6 +207,11 @@ export const vi = {
     stopRecording: "Dừng ghi âm",
     voiceInput: "Nhập giọng nói",
     microphoneError: "Không thể truy cập microphone",
+    voiceError: "Lỗi nhận dạng giọng nói",
+    voiceListening: "Đang nghe...",
+    voiceSpeaking: "Đang nói...",
+    ttsOn: "Bật đọc phản hồi",
+    ttsOff: "Tắt đọc phản hồi",
 
     // Send button
     stop: "Dừng",
@@ -1151,6 +1156,30 @@ export const vi = {
     showAdvanced: "Hiện nâng cao",
     hideAdvanced: "Ẩn nâng cao",
     unsavedChanges: "Bạn có thay đổi chưa lưu",
+  },
+
+  // ============================================
+  // AGENT TABS
+  // ============================================
+  agentTabs: {
+    newTab: "Tab mới",
+    closeTab: "Đóng tab",
+    closeConfirm: "Đóng tab này? Phiên sẽ được lưu trữ.",
+    rename: "Đổi tên",
+    presets: {
+      title: "Chọn loại tác tử",
+      code: "Lập trình",
+      writer: "Soạn văn",
+      research: "Nghiên cứu",
+      translator: "Phiên dịch",
+      custom: "Tùy chỉnh",
+    },
+    unread: "chưa đọc",
+    pin: "Ghim tab",
+    unpin: "Bỏ ghim tab",
+    splitView: "Chia đôi màn hình",
+    focusLeft: "Chọn khung trái",
+    focusRight: "Chọn khung phải",
   },
 } as const;
 
