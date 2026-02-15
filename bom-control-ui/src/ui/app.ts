@@ -83,6 +83,23 @@ import { connectionManager, type ConnectionState } from "./connection/connection
 import { loadMemory as loadMemoryInternal } from "./controllers/memory";
 import { type SetupGuideState, createSetupGuideState } from "./views/setup-guide";
 import type { AgentTab } from "./controllers/agent-tabs";
+import {
+  loadProjects as loadProjectsInternal,
+  scanProject as scanProjectInternal,
+} from "./controllers/projects";
+import {
+  deployProject as deployProjectInternal,
+  loadDeployHistory as loadDeployHistoryInternal,
+  loadPreviews as loadPreviewsInternal,
+  createPreview as createPreviewInternal,
+  deletePreview as deletePreviewInternal,
+  promotePreview as promotePreviewInternal,
+  type ProjectInfo,
+  type DeployRecord,
+  type DeployPlatform,
+  type DeployStatus,
+  type PreviewRecord,
+} from "./controllers/deploys";
 
 declare global {
   interface Window {
@@ -286,6 +303,37 @@ export class OpenClawApp extends LitElement {
   @state() memoryEditDraft = "";
   @state() memoryExtracting = false;
   @state() memoryExtractStatus: "idle" | "extracting" | "extracted" = "idle";
+
+  // Projects state
+  @state() projectsLoading = false;
+  @state() projectsList: ProjectInfo[] = [];
+  @state() projectsError: string | null = null;
+  @state() projectsScanning = false;
+  @state() projectsScanStatus: "idle" | "scanning" | "scanned" = "idle";
+
+  // Deploy state
+  @state() deployLoading = false;
+  @state() deployHistory: DeployRecord[] = [];
+  @state() deployError: string | null = null;
+  @state() deployActiveId: string | null = null;
+  @state() deployStatus: DeployStatus | null = null;
+  @state() deployLogLines: string[] = [];
+  @state() deploySelectedProject: string | null = null;
+  @state() deploySelectedPlatform: DeployPlatform | null = null;
+  @state() deploySelectedTarget: "production" | "staging" | "preview" = "production";
+  @state() deploySelectedBranch = "";
+  @state() deployRunning = false;
+
+  // Preview state
+  @state() previewLoading = false;
+  @state() previewList: PreviewRecord[] = [];
+  @state() previewError: string | null = null;
+  @state() previewCreating = false;
+  @state() previewDeleting: string | null = null;
+  @state() previewPromoting: string | null = null;
+  @state() previewSelectedProject: string | null = null;
+  @state() previewBranch = "";
+  @state() previewIframeUrl: string | null = null;
 
   // Memory indicator (chat header)
   @state() memoryIndicatorEnabled = true;
@@ -634,6 +682,38 @@ export class OpenClawApp extends LitElement {
   retryConnection() {
     connectionManager.reconnect();
     this.connect();
+  }
+
+  async handleLoadProjects() {
+    await loadProjectsInternal(this);
+  }
+
+  async handleScanProject(projectId: string) {
+    await scanProjectInternal(this, projectId);
+  }
+
+  async handleDeploy() {
+    await deployProjectInternal(this);
+  }
+
+  async handleLoadDeployHistory() {
+    await loadDeployHistoryInternal(this);
+  }
+
+  async handleLoadPreviews() {
+    await loadPreviewsInternal(this);
+  }
+
+  async handleCreatePreview() {
+    await createPreviewInternal(this);
+  }
+
+  async handleDeletePreview(previewId: string) {
+    await deletePreviewInternal(this, previewId);
+  }
+
+  async handlePromotePreview(previewId: string) {
+    await promotePreviewInternal(this, previewId);
   }
 
   render() {

@@ -115,6 +115,18 @@ import {
 } from "./controllers/cron";
 import { loadDebug, callDebugMethod } from "./controllers/debug";
 import { loadLogs } from "./controllers/logs";
+import {
+  loadProjects,
+  scanProject,
+} from "./controllers/projects";
+import {
+  deployProject,
+  loadDeployHistory,
+  loadPreviews,
+  createPreview,
+  deletePreview,
+  promotePreview,
+} from "./controllers/deploys";
 import { renderConnectionBanner } from "./components/connection-banner";
 import { renderSetupGuide, type SetupGuideState } from "./views/setup-guide";
 import { type ConnectionState } from "./connection/connection-manager";
@@ -1009,6 +1021,77 @@ export function renderApp(state: AppViewState) {
                 onRefresh: () => loadLogs(state, { reset: true }),
                 onExport: (lines, label) => state.exportLogs(lines, label),
                 onScroll: (event) => state.handleLogsScroll(event),
+              }))
+            : nothing
+        }
+
+        ${
+          state.tab === "projects"
+            ? lazyView("projects", () => import("./views/projects-view"), (m) => m.renderProjects({
+                loading: state.projectsLoading,
+                projects: state.projectsList,
+                error: state.projectsError,
+                scanning: state.projectsScanning,
+                scanStatus: state.projectsScanStatus,
+                connected: state.connected,
+                onRefresh: () => loadProjects(state),
+                onScan: (projectId) => scanProject(state, projectId),
+              }))
+            : nothing
+        }
+
+        ${
+          state.tab === "deploy"
+            ? lazyView("deploy", () => import("./views/deploy-view"), (m) => m.renderDeploy({
+                loading: state.deployLoading,
+                history: state.deployHistory,
+                error: state.deployError,
+                connected: state.connected,
+                projects: state.projectsList,
+                selectedProject: state.deploySelectedProject,
+                selectedPlatform: state.deploySelectedPlatform,
+                selectedTarget: state.deploySelectedTarget,
+                selectedBranch: state.deploySelectedBranch,
+                running: state.deployRunning,
+                status: state.deployStatus,
+                logLines: state.deployLogLines,
+                onRefresh: () => loadDeployHistory(state),
+                onDeploy: () => deployProject(state),
+                onProjectChange: (id) => (state.deploySelectedProject = id),
+                onPlatformChange: (p) => (state.deploySelectedPlatform = p),
+                onTargetChange: (t) => (state.deploySelectedTarget = t),
+                onBranchChange: (b) => (state.deploySelectedBranch = b),
+                onCopyLog: () => {
+                  navigator.clipboard.writeText(state.deployLogLines.join("\n")).catch(() => {});
+                },
+              }))
+            : nothing
+        }
+
+        ${
+          state.tab === "preview"
+            ? lazyView("preview", () => import("./views/preview-view"), (m) => m.renderPreview({
+                loading: state.previewLoading,
+                previews: state.previewList,
+                error: state.previewError,
+                connected: state.connected,
+                projects: state.projectsList,
+                creating: state.previewCreating,
+                deleting: state.previewDeleting,
+                promoting: state.previewPromoting,
+                selectedProject: state.previewSelectedProject,
+                branch: state.previewBranch,
+                iframeUrl: state.previewIframeUrl,
+                onRefresh: () => loadPreviews(state),
+                onCreate: () => createPreview(state),
+                onDelete: (id) => deletePreview(state, id),
+                onPromote: (id) => promotePreview(state, id),
+                onProjectChange: (id) => (state.previewSelectedProject = id),
+                onBranchChange: (b) => (state.previewBranch = b),
+                onOpenPreview: (url) => (state.previewIframeUrl = url),
+                onCopyUrl: (url) => {
+                  navigator.clipboard.writeText(url).catch(() => {});
+                },
               }))
             : nothing
         }

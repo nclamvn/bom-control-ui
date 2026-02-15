@@ -18,10 +18,14 @@ export const en = {
     logs: "Logs",
     memory: "Memory",
     docs: "Docs",
+    projects: "Projects",
+    deploy: "Deploy",
+    preview: "Preview",
 
     // Groups - Minimal 2-group structure
     core: "Core",
     admin: "Admin",
+    deployGroup: "Deploy",
 
     // Legacy groups (keep for compatibility)
     conversations: "CONVERSATIONS",
@@ -48,6 +52,9 @@ export const en = {
       debug: "Gateway snapshots, events and manual RPC calls.",
       logs: "Live tail gateway file logs.",
       memory: "Browse and manage user facts extracted from conversations.",
+      projects: "Manage projects, scan environments and check health.",
+      deploy: "Deploy projects to production or staging targets.",
+      preview: "Create and manage preview deployments with shareable URLs.",
     },
   },
 
@@ -1179,6 +1186,125 @@ export const en = {
     splitView: "Split view",
     focusLeft: "Focus left pane",
     focusRight: "Focus right pane",
+  },
+
+  // ============================================
+  // PROJECTS
+  // ============================================
+  projects: {
+    title: "Projects",
+    description: "Registered projects and environment health.",
+    empty: "No projects found.",
+    scan: "Scan",
+    scanning: "Scanning...",
+    scanned: "Scanned!",
+    rescan: "Rescan",
+    addProject: "Add Project",
+    health: {
+      healthy: "Healthy",
+      warning: "Warning",
+      error: "Error",
+      unknown: "Unknown",
+    },
+    env: {
+      title: "Environment",
+      valid: "Valid",
+      missing: "Missing variables",
+      check: "Check env",
+    },
+    card: {
+      lastDeploy: "Last deploy",
+      platform: "Platform",
+      branch: "Branch",
+      never: "Never",
+    },
+  },
+
+  // ============================================
+  // DEPLOY
+  // ============================================
+  deploy: {
+    title: "Deploy",
+    description: "Deploy projects to production or staging.",
+    empty: "No deployments yet.",
+    start: "Deploy",
+    deploying: "Deploying...",
+    cancel: "Cancel",
+    platform: "Platform",
+    target: "Target",
+    branch: "Branch",
+    selectProject: "Select project",
+    selectPlatform: "Select platform",
+    platforms: {
+      fly: "Fly.io",
+      railway: "Railway",
+      vercel: "Vercel",
+      docker: "Docker",
+      custom: "Custom",
+    },
+    targets: {
+      production: "Production",
+      staging: "Staging",
+      preview: "Preview",
+    },
+    status: {
+      pending: "Pending",
+      building: "Building",
+      deploying: "Deploying",
+      success: "Success",
+      failed: "Failed",
+      cancelled: "Cancelled",
+    },
+    log: {
+      title: "Deploy Log",
+      empty: "No output yet.",
+      copy: "Copy log",
+      download: "Download log",
+    },
+    history: {
+      title: "History",
+      empty: "No deploy history.",
+      viewLog: "View log",
+    },
+    confirm: {
+      title: "Confirm deploy",
+      message: "Deploy {project} to {target}?",
+      proceed: "Deploy now",
+    },
+  },
+
+  // ============================================
+  // PREVIEW
+  // ============================================
+  preview: {
+    title: "Preview",
+    description: "Preview deployments with shareable URLs.",
+    empty: "No preview deployments.",
+    create: "Create Preview",
+    creating: "Creating...",
+    delete: "Delete",
+    deleting: "Deleting...",
+    promote: "Promote to production",
+    promoting: "Promoting...",
+    open: "Open preview",
+    copyUrl: "Copy URL",
+    urlCopied: "URL copied!",
+    iframe: {
+      title: "Preview",
+      loading: "Loading preview...",
+      openExternal: "Open in new tab",
+    },
+    card: {
+      branch: "Branch",
+      created: "Created",
+      expires: "Expires",
+      url: "URL",
+    },
+    form: {
+      project: "Project",
+      branch: "Branch",
+      branchPlaceholder: "feature/my-branch",
+    },
   },
 } as const;
 

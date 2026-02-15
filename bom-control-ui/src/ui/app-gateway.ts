@@ -273,6 +273,32 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
     return;
   }
 
+  if (evt.event === "copilot.deploy.log") {
+    const payload = evt.payload as { line?: string; deploymentId?: string } | undefined;
+    const app = host as unknown as OpenClawApp;
+    if (payload?.line && app.deployActiveId === payload.deploymentId) {
+      app.deployLogLines = [...app.deployLogLines, payload.line];
+    }
+    return;
+  }
+
+  if (evt.event === "copilot.deploy.complete") {
+    const payload = evt.payload as
+      | { success: boolean; url?: string; error?: string }
+      | undefined;
+    const app = host as unknown as OpenClawApp;
+    app.deployRunning = false;
+    if (payload?.success) {
+      app.deployStatus = "success";
+    } else {
+      app.deployStatus = "failed";
+      if (payload?.error) {
+        app.deployError = payload.error;
+      }
+    }
+    return;
+  }
+
   if (evt.event === "exec.approval.resolved") {
     const resolved = parseExecApprovalResolved(evt.payload);
     if (resolved) {

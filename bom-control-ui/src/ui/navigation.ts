@@ -17,6 +17,13 @@ export const TAB_GROUPS = [
     icon: "settings",
     shortcut: "2"
   },
+  {
+    label: "deploy",
+    labelKey: "deployGroup",
+    tabs: ["projects", "deploy", "preview"],
+    icon: "rocket",
+    shortcut: "3"
+  },
 ] as const;
 
 export function getTabGroupLabel(group: (typeof TAB_GROUPS)[number]): string {
@@ -26,6 +33,8 @@ export function getTabGroupLabel(group: (typeof TAB_GROUPS)[number]): string {
       return (translations.nav as Record<string, string>).core ?? "Core";
     case "admin":
       return (translations.nav as Record<string, string>).admin ?? "Admin";
+    case "deployGroup":
+      return (translations.nav as Record<string, string>).deployGroup ?? "Deploy";
     // Legacy fallbacks
     case "conversations":
       return translations.nav.conversations ?? "CONVERSATIONS";
@@ -56,7 +65,10 @@ export type Tab =
   | "memory"
   | "config"
   | "debug"
-  | "logs";
+  | "logs"
+  | "projects"
+  | "deploy"
+  | "preview";
 
 const TAB_PATHS: Record<Tab, string> = {
   overview: "/overview",
@@ -71,6 +83,9 @@ const TAB_PATHS: Record<Tab, string> = {
   config: "/config",
   debug: "/debug",
   logs: "/logs",
+  projects: "/projects",
+  deploy: "/deploy",
+  preview: "/preview",
 };
 
 const PATH_TO_TAB = new Map(Object.entries(TAB_PATHS).map(([tab, path]) => [path, tab as Tab]));
@@ -160,6 +175,12 @@ export function iconForTab(tab: Tab): IconName {
       return "bug";
     case "logs":
       return "scrollText";
+    case "projects":
+      return "folder";
+    case "deploy":
+      return "rocket";
+    case "preview":
+      return "globe";
     default:
       return "folder";
   }
@@ -192,6 +213,12 @@ export function titleForTab(tab: Tab) {
       return translations.nav.debug;
     case "logs":
       return translations.nav.logs;
+    case "projects":
+      return translations.nav.projects;
+    case "deploy":
+      return translations.nav.deploy;
+    case "preview":
+      return translations.nav.preview;
     default:
       return translations.nav.control;
   }
@@ -224,6 +251,12 @@ export function subtitleForTab(tab: Tab) {
       return subtitles.debug;
     case "logs":
       return subtitles.logs;
+    case "projects":
+      return subtitles.projects;
+    case "deploy":
+      return subtitles.deploy;
+    case "preview":
+      return subtitles.preview;
     default:
       return "";
   }

@@ -31,6 +31,7 @@ import type { DevicePairingList } from "./controllers/devices";
 import type { ExecApprovalRequest } from "./controllers/exec-approval";
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form";
 import type { AgentTab } from "./controllers/agent-tabs";
+import type { ProjectInfo, DeployRecord, PreviewRecord, DeployStatus, DeployPlatform } from "./controllers/deploys";
 
 export type AppViewState = {
   settings: UiSettings;
@@ -191,6 +192,34 @@ export type AppViewState = {
   memoryIndicatorFacts: UserFact[];
   memoryIndicatorTotal: number;
   memoryIndicatorExpanded: boolean;
+  // Projects state
+  projectsLoading: boolean;
+  projectsList: ProjectInfo[];
+  projectsError: string | null;
+  projectsScanning: boolean;
+  projectsScanStatus: "idle" | "scanning" | "scanned";
+  // Deploy state
+  deployLoading: boolean;
+  deployHistory: DeployRecord[];
+  deployError: string | null;
+  deployActiveId: string | null;
+  deployStatus: DeployStatus | null;
+  deployLogLines: string[];
+  deploySelectedProject: string | null;
+  deploySelectedPlatform: DeployPlatform | null;
+  deploySelectedTarget: "production" | "staging" | "preview";
+  deploySelectedBranch: string;
+  deployRunning: boolean;
+  // Preview state
+  previewLoading: boolean;
+  previewList: PreviewRecord[];
+  previewError: string | null;
+  previewCreating: boolean;
+  previewDeleting: string | null;
+  previewPromoting: string | null;
+  previewSelectedProject: string | null;
+  previewBranch: string;
+  previewIframeUrl: string | null;
   handleLoadMemory: () => Promise<void>;
   debugLoading: boolean;
   debugStatus: StatusSummary | null;
@@ -273,4 +302,13 @@ export type AppViewState = {
   handleOpenSidebar: (content: string) => void;
   handleCloseSidebar: () => void;
   handleSplitRatioChange: (ratio: number) => void;
+  // Deploy handlers
+  handleLoadProjects: () => Promise<void>;
+  handleScanProject: (projectId: string) => Promise<void>;
+  handleDeploy: () => Promise<void>;
+  handleLoadDeployHistory: () => Promise<void>;
+  handleLoadPreviews: () => Promise<void>;
+  handleCreatePreview: () => Promise<void>;
+  handleDeletePreview: (previewId: string) => Promise<void>;
+  handlePromotePreview: (previewId: string) => Promise<void>;
 };

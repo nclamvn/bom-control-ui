@@ -19,10 +19,14 @@ export const vi = {
     logs: "Nhật ký",
     memory: "Trí nhớ",
     docs: "Tài liệu",
+    projects: "Dự án",
+    deploy: "Triển khai",
+    preview: "Xem trước",
 
     // Groups - Minimal 2-group structure
     core: "Chính",
     admin: "Quản trị",
+    deployGroup: "Triển khai",
 
     // Legacy groups (keep for compatibility)
     conversations: "HỘI THOẠI",
@@ -49,6 +53,9 @@ export const vi = {
       debug: "Ảnh chụp gateway, sự kiện và gọi RPC thủ công.",
       logs: "Theo dõi trực tiếp nhật ký tệp gateway.",
       memory: "Duyệt và quản lý sự kiện người dùng trích xuất từ hội thoại.",
+      projects: "Quản lý dự án, quét môi trường và kiểm tra sức khỏe.",
+      deploy: "Triển khai dự án lên production hoặc staging.",
+      preview: "Tạo và quản lý bản triển khai xem trước với URL chia sẻ.",
     },
   },
 
@@ -1180,6 +1187,125 @@ export const vi = {
     splitView: "Chia đôi màn hình",
     focusLeft: "Chọn khung trái",
     focusRight: "Chọn khung phải",
+  },
+
+  // ============================================
+  // PROJECTS
+  // ============================================
+  projects: {
+    title: "Dự án",
+    description: "Dự án đã đăng ký và sức khỏe môi trường.",
+    empty: "Không tìm thấy dự án nào.",
+    scan: "Quét",
+    scanning: "Đang quét...",
+    scanned: "Đã quét!",
+    rescan: "Quét lại",
+    addProject: "Thêm dự án",
+    health: {
+      healthy: "Khỏe mạnh",
+      warning: "Cảnh báo",
+      error: "Lỗi",
+      unknown: "Không rõ",
+    },
+    env: {
+      title: "Môi trường",
+      valid: "Hợp lệ",
+      missing: "Thiếu biến",
+      check: "Kiểm tra env",
+    },
+    card: {
+      lastDeploy: "Triển khai cuối",
+      platform: "Nền tảng",
+      branch: "Nhánh",
+      never: "Chưa bao giờ",
+    },
+  },
+
+  // ============================================
+  // DEPLOY
+  // ============================================
+  deploy: {
+    title: "Triển khai",
+    description: "Triển khai dự án lên production hoặc staging.",
+    empty: "Chưa có triển khai nào.",
+    start: "Triển khai",
+    deploying: "Đang triển khai...",
+    cancel: "Hủy",
+    platform: "Nền tảng",
+    target: "Mục tiêu",
+    branch: "Nhánh",
+    selectProject: "Chọn dự án",
+    selectPlatform: "Chọn nền tảng",
+    platforms: {
+      fly: "Fly.io",
+      railway: "Railway",
+      vercel: "Vercel",
+      docker: "Docker",
+      custom: "Tùy chỉnh",
+    },
+    targets: {
+      production: "Production",
+      staging: "Staging",
+      preview: "Preview",
+    },
+    status: {
+      pending: "Đang chờ",
+      building: "Đang build",
+      deploying: "Đang triển khai",
+      success: "Thành công",
+      failed: "Thất bại",
+      cancelled: "Đã hủy",
+    },
+    log: {
+      title: "Nhật ký triển khai",
+      empty: "Chưa có đầu ra.",
+      copy: "Sao chép log",
+      download: "Tải log",
+    },
+    history: {
+      title: "Lịch sử",
+      empty: "Không có lịch sử triển khai.",
+      viewLog: "Xem log",
+    },
+    confirm: {
+      title: "Xác nhận triển khai",
+      message: "Triển khai {project} lên {target}?",
+      proceed: "Triển khai ngay",
+    },
+  },
+
+  // ============================================
+  // PREVIEW
+  // ============================================
+  preview: {
+    title: "Xem trước",
+    description: "Bản triển khai xem trước với URL chia sẻ.",
+    empty: "Không có bản triển khai xem trước.",
+    create: "Tạo Preview",
+    creating: "Đang tạo...",
+    delete: "Xóa",
+    deleting: "Đang xóa...",
+    promote: "Nâng lên production",
+    promoting: "Đang nâng cấp...",
+    open: "Mở xem trước",
+    copyUrl: "Sao chép URL",
+    urlCopied: "Đã sao chép URL!",
+    iframe: {
+      title: "Xem trước",
+      loading: "Đang tải xem trước...",
+      openExternal: "Mở trong tab mới",
+    },
+    card: {
+      branch: "Nhánh",
+      created: "Tạo lúc",
+      expires: "Hết hạn",
+      url: "URL",
+    },
+    form: {
+      project: "Dự án",
+      branch: "Nhánh",
+      branchPlaceholder: "feature/nhánh-tôi",
+    },
   },
 } as const;
 

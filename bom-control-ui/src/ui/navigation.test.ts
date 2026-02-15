@@ -180,8 +180,8 @@ describe("inferBasePathFromPathname", () => {
 describe("TAB_GROUPS", () => {
   it("contains all expected groups", () => {
     const labels = TAB_GROUPS.map((g) => g.label);
-    expect(labels).toEqual(["core", "admin"]);
-    expect(labels).toHaveLength(2);
+    expect(labels).toEqual(["core", "admin", "deploy"]);
+    expect(labels).toHaveLength(3);
   });
 
   it("all tabs are unique", () => {
