@@ -1,7 +1,7 @@
 # TÀI LIỆU CHUYỂN GIAO DỰ ÁN — Bờm Workspace 👻
 
-> Ngày tạo: 2026-02-15
-> Phiên bản: 1.0
+> Ngày tạo: 2026-02-15 | Cập nhật: 2026-02-16
+> Phiên bản: 2.0
 > Người tạo: AI Agent (Claude Code)
 
 ---
@@ -39,8 +39,9 @@
 
 | Thành phần | Vai trò | Trạng thái |
 |-----------|---------|-----------|
-| **bom-control-ui** | Giao diện web điều khiển Gateway | ✅ Production-ready (368 tests, 0 failures) |
+| **bom-control-ui** | Giao diện web điều khiển Gateway | ✅ Production-ready (443 tests, 0 failures) |
 | **openclaw-vietnam** | Fork Việt hóa OpenClaw Gateway | ✅ v2026.2.6 |
+| **copilot plugin** | Gateway RPC cho deploy/preview/projects | ✅ 23 handlers |
 | **Workspace Files** | Identity, memory, personality cho AI | ✅ Hoàn tất |
 | **Demo Projects** | 4 dự án demo (Next.js, React) | ✅ Demo |
 
@@ -51,7 +52,7 @@
 | UI Framework | **LitElement 3.3.2** (Web Components) |
 | Language | **TypeScript 5.8+** (strict mode) |
 | Build Tool | **Vite 7.3.1** |
-| Styling | **Vanilla CSS** (17 files, module-based) |
+| Styling | **Vanilla CSS** (20 files, module-based) |
 | Testing | **Vitest 4.0.18** + Playwright (browser tests) |
 | Package Manager | **pnpm 10** |
 | Node.js | **22+** |
@@ -105,7 +106,12 @@
               │  ┌──────────────────┐  │
               │  │ Extensions       │  │
               │  │ (Memory, LLM,    │  │
-              │  │  Auth, etc.)     │  │
+              │  │  Auth, Copilot)  │  │
+              │  └──────────────────┘  │
+              │  ┌──────────────────┐  │
+              │  │ Copilot Plugin   │  │
+              │  │ (23 RPC handlers │  │
+              │  │  → VAT scripts)  │  │
               │  └──────────────────┘  │
               └────────────────────────┘
 ```
@@ -172,7 +178,7 @@ clawd/                              ← Root workspace (Git tracked)
 │   ├── docs/                       # Mintlify documentation
 │   └── skills/vibecode-build/      # Vibecode skill source
 │
-├── 📁 openclaw-src/                # Upstream reference (không chỉnh sửa)
+├── 📁 openclaw-src/                # Fork reference (extensions/copilot/ plugin)
 │
 ├── 📁 apple-showcase/              # Demo: Next.js Apple-style showcase
 ├── 📁 projects/                    # 3 demo projects (React + Vite)
@@ -346,6 +352,8 @@ Controllers quản lý logic nghiệp vụ cho từng feature:
 | `assistant-identity.ts` | AI assistant name/avatar |
 | `exec-approval.ts` | Command execution approval queue |
 | `exec-approvals.ts` | Approval rules management |
+| `deploys.ts` | Deploy state, project/deploy/preview RPC calls |
+| `projects.ts` | Project operations (thin shim over deploys) |
 
 #### Components (LitElement Web Components)
 
@@ -370,6 +378,8 @@ Reusable UI components, mỗi component tự render:
 | `empty-states.ts` | Empty state illustrations |
 | `loading-states.ts` | Loading spinner/skeleton |
 | `error-states.ts` | Error display |
+| `terminal-output.ts` | Deploy log terminal output |
+| `file-diff-viewer.ts` | File diff display |
 
 #### Views (Page Modules)
 
@@ -388,6 +398,9 @@ Mỗi tab trong sidebar tương ứng với một view:
 | Debug | `debug.ts` | Debug console, RPC tester |
 | Logs | (in views/) | Log viewer |
 | Cron | `cron.ts` | Scheduled jobs |
+| Projects | `projects-view.ts` | Project registry management |
+| Deploy | `deploy-view.ts` | Deploy workflow + log streaming |
+| Preview | `preview-view.ts` | Preview environment management |
 | Command Palette | `command-palette.ts` | ⌘K quick navigation |
 | Setup Guide | `setup-guide.ts` | First-time setup wizard |
 
@@ -556,6 +569,29 @@ Tất cả messages là JSON:
 | `channels.status` | — | Trạng thái các kênh |
 | `exec.approval.resolve` | id, decision | Phê duyệt/từ chối exec |
 | `assistant.identity` | — | Thông tin assistant |
+| `copilot.projects.list` | filter | Danh sách projects |
+| `copilot.projects.get` | id | Chi tiết project |
+| `copilot.projects.scan` | path | Scan + register project |
+| `copilot.projects.rescan` | id | Rescan existing project |
+| `copilot.projects.archive` | id | Archive project |
+| `copilot.projects.unarchive` | id | Unarchive project |
+| `copilot.projects.remove` | id | Remove project |
+| `copilot.projects.touch` | id | Touch (update timestamp) |
+| `copilot.deploy.precheck` | projectId | Pre-deploy checks |
+| `copilot.deploy.start` | projectId, platform, target, branch | Start deploy (streaming) |
+| `copilot.deploy.cancel` | deploymentId | Cancel active deploy |
+| `copilot.deploy.history` | projectId? | Deploy history |
+| `copilot.deploy.logs` | projectId/deployId | Read deploy logs |
+| `copilot.deploy.rollback` | projectId, platform? | Rollback deploy |
+| `copilot.deploy.status` | — | Deploy system status |
+| `copilot.deploy.healthCheck` | url | Health check endpoint |
+| `copilot.preview.list` | projectId? | List previews |
+| `copilot.preview.create` | projectId, branch?, platform? | Create preview |
+| `copilot.preview.promote` | projectId, url? | Promote to production |
+| `copilot.preview.delete` | projectId, url? | Delete preview |
+| `copilot.preview.clean` | projectId, keep?, platform? | Clean old previews |
+| `copilot.system.health` | — | Copilot system health |
+| `copilot.system.fix` | — | Auto-fix copilot issues |
 
 ### 5.5 Events (Gateway push)
 
@@ -570,6 +606,8 @@ Tất cả messages là JSON:
 | `device.pair.resolved` | — | Pairing approved/rejected |
 | `exec.approval.requested` | id, command, expiresAtMs | Command needs approval |
 | `exec.approval.resolved` | id, decision | Approval decided |
+| `copilot.deploy.log` | deploymentId, line, timestamp | Streaming deploy log line |
+| `copilot.deploy.complete` | success, url?, error? | Deploy finished |
 
 ### 5.6 Auto-Reconnect
 
@@ -653,7 +691,7 @@ type Translations = {
 
 - **Framework:** Vitest 4.0.18
 - **Browser testing:** @vitest/browser-playwright + Chromium (headless)
-- **Tổng:** 43 test files, 368 tests, 0 failures
+- **Tổng:** 34 test files, 443 tests, 0 failures
 - **Chạy:** `pnpm test` (trong `bom-control-ui/`)
 
 ### 7.2 Test Files
@@ -925,9 +963,11 @@ MEMORY.md               →   Curated wisdom, verified patterns
 
 ### Development Cycle Stats
 
-- **4 feature tracks, 10 phases**
-- **53 files changed, +6414 lines**
-- **368 UI tests (30 files), 0 failures**
+- **8 feature tracks, 12 phases** (Phase 1-2 + Phase C+D)
+- **193 source files, ~48,400 lines of code**
+- **443 UI tests (34 files), 0 failures**
+- **19 commits** (Feb 2026)
+- **Copilot plugin:** 960 lines, 23 RPC handlers, 8 gateway files
 
 ### Feature Details
 
@@ -982,6 +1022,18 @@ MEMORY.md               →   Curated wisdom, verified patterns
 - Input font sizes for mobile
 - Component layout adjustments
 - Responsive sidebar
+
+#### 8. Copilot Plugin (Phase C+D) — NEW
+- **Gateway plugin** (`extensions/copilot/`) — OpenClaw plugin system
+- **23 RPC handlers** registered via `api.registerGatewayMethod()`
+- **Script bridge** — `executeScript()` + `executeScriptStream()` to VAT bash scripts
+- **Projects:** list/get/scan/archive/unarchive/remove/touch/rescan (8 handlers)
+- **Deploy:** precheck/start/cancel/history/logs/rollback/status/healthCheck (8 handlers)
+- **Preview:** list/create/promote/delete/clean (5 handlers)
+- **System:** health/fix (2 handlers)
+- **Deploy streaming** — real-time log lines via `context.broadcast("copilot.deploy.log")`
+- **UI views** — Projects/Deploy/Preview tabs with live RPC calls
+- **Authorization** — 7 read methods + 16 write methods added to gateway scope sets
 
 ---
 
@@ -1134,6 +1186,13 @@ Khi gặp lỗi, kiểm tra theo thứ tự:
 - [ ] Điền thêm TOOLS.md (machines, SSH, preferences)
 - [ ] Cấu hình BOOT.md cho gateway startup tasks
 
+### Copilot Plugin
+
+- [ ] Unit tests cho handler files (projects, deploy, preview)
+- [ ] Thêm `onClose` callback cho `executeScriptStream` → broadcast `copilot.deploy.complete`
+- [ ] Retry logic cho script bridge (transient failures)
+- [ ] VAT scripts validation (check scripts exist on startup)
+
 ### openclaw-vietnam
 
 - [ ] Theo dõi upstream releases
@@ -1145,6 +1204,8 @@ Khi gặp lỗi, kiểm tra theo thứ tự:
 ## 17. LỊCH SỬ COMMIT
 
 ```
+1fe34bf Add handover docs and gitignore playwright artifacts
+f3e8d5c Phase C+D: Copilot UI views + gateway RPC integration
 b08dd9a Phase 2: Agent tabs, voice input, split view
 09b0957 Fix session switcher dropdown: sync CSS with HTML class names
 6b02c72 Mobile responsive: touch targets, input font sizes, component layouts
@@ -1162,6 +1223,13 @@ f213410 Add design skills suite: frontend-design, theme-factory, canvas-design
 a57431f Harden .gitignore and remove personal info before public release
 6189025 Redesign API key input: dedicated banner + fix WebSocket reconnect
 db608e1 Initial commit: Bờm workspace + Control UI
+
+# openclaw-src (fork — vibeclaw remote)
+899d5a2 Copilot plugin: project, deploy, preview RPC handlers
+47fdee2 docs: Add Vietnamese README
+85d3c4f chore(ui): Security cleanup and UI refinements
+5f4daa4 feat(ui): Add EN/VI localization and update branding
+4f40eb1 feat(ui): Complete UI/UX redesign with Vibeclaw theme
 ```
 
 ---
@@ -1188,6 +1256,13 @@ db608e1 Initial commit: Bờm workspace + Control UI
 | CI pipeline | `.github/workflows/ci.yml` |
 | Device auth | `bom-control-ui/src/lib/device-auth.ts` |
 | CSS entry | `bom-control-ui/src/styles.css` |
+| Deploy controller | `bom-control-ui/src/ui/controllers/deploys.ts` |
+| Projects view | `bom-control-ui/src/ui/views/projects-view.ts` |
+| Deploy view | `bom-control-ui/src/ui/views/deploy-view.ts` |
+| Preview view | `bom-control-ui/src/ui/views/preview-view.ts` |
+| Copilot plugin | `openclaw-src/extensions/copilot/index.ts` |
+| Script bridge | `openclaw-src/extensions/copilot/script-bridge.ts` |
+| Gateway auth | `openclaw-src/src/gateway/server-methods.ts` |
 
 ### Lệnh thường dùng
 
@@ -1211,13 +1286,15 @@ lsof -i :5173                       # Check dev server port
 
 ```
 clawd (main workspace — tracked in git)
-├── bom-control-ui/     ← Part of clawd repo
+├── bom-control-ui/     ← Part of clawd repo (UI, controllers, views)
 ├── .github/workflows/  ← Part of clawd repo
 │
 ├── openclaw-vietnam/   ← Separate git repo (gitignored)
 │   └── upstream: https://github.com/openclaw/openclaw
 │
-└── openclaw-src/       ← Separate git repo (gitignored, reference only)
+└── openclaw-src/       ← Fork repo (pushed to vibeclaw remote)
+    ├── extensions/copilot/  ← Copilot plugin (23 RPC handlers)
+    └── src/gateway/         ← Authorization sets (READ/WRITE_METHODS)
 ```
 
 ---
