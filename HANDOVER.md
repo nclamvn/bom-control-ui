@@ -1,6 +1,6 @@
 # HANDOVER - Bờm Workspace 👻
 
-> Cập nhật: 2026-02-12
+> Cập nhật: 2026-02-16
 
 ## Tổng quan
 
@@ -9,6 +9,8 @@ Workspace này chứa toàn bộ hệ sinh thái: identity, memory, UI, fork Vi�
 
 **Repo:** `clawd` (local workspace — không phải public repo riêng lẻ)
 
+> Chi tiết đầy đủ: xem `HANDOVER-FULL.md` (1300+ dòng, mọi RPC, kiến trúc, flow)
+
 ---
 
 ## Trạng thái hiện tại
@@ -16,11 +18,12 @@ Workspace này chứa toàn bộ hệ sinh thái: identity, memory, UI, fork Vi�
 | Thành phần | Trạng thái | Ghi chú |
 |-----------|-----------|---------|
 | Bờm Identity | ✅ Hoàn tất | SOUL, IDENTITY, AGENTS, memory system |
-| bom-control-ui | ✅ Hoạt động | Chat, Sessions, Memory, Device Guard, Skills — 368 tests, 0 failures |
-| openclaw-vietnam | ✅ Hoàn tất | Fork Việt hóa, Vibecode tools |
+| bom-control-ui | ✅ Production-ready | 128 source files, 25k LOC, 443 tests (34 files), 0 failures |
+| copilot plugin | ✅ Hoạt động | 23 RPC handlers (projects/deploy/preview), gateway integration |
+| openclaw-vietnam | ✅ v2026.2.6 | Fork Việt hóa, Vibecode tools |
+| CI/CD | ✅ GitHub Actions | Test + Build pipeline (ci.yml + pr-check.yml) |
 | apple-showcase | ✅ Demo | Next.js Apple-style product showcase |
 | projects/ (3 demo) | ✅ Demo | Vibecode output: finance, blog, store |
-| Vibecode skill | ✅ Linked | Symlink từ openclaw-vietnam |
 
 ---
 
@@ -43,6 +46,8 @@ clawd/                          ← Root workspace
 ├── memory/                     # Daily logs (YYYY-MM-DD.md)
 │   └── 2026-01-31.md           # First boot log
 │
+├── .github/workflows/          # CI/CD (ci.yml, pr-check.yml)
+│
 ├── canvas/                     # UI files cho node displays
 │   └── index.html
 │
@@ -54,7 +59,9 @@ clawd/                          ← Root workspace
 │   ├── HANDOVER.md             # Chi tiết handover cho fork
 │   └── skills/vibecode-build/  # Vibecode skill source
 │
-├── openclaw-src/               # OpenClaw upstream source (reference)
+├── openclaw-src/               # Fork reference (Copilot plugin source)
+│   ├── extensions/copilot/     # 23 RPC handlers → VAT scripts
+│   └── src/gateway/            # Auth scope sets (READ/WRITE methods)
 │
 ├── apple-showcase/             # Next.js Apple product demo
 │   └── src/app/                # App Router, components
@@ -73,16 +80,17 @@ clawd/                          ← Root workspace
 **Tracked (trong repo):**
 - Workspace files: IDENTITY, SOUL, AGENTS, USER, MEMORY, README, etc.
 - `bom-control-ui/` — toàn bộ Control UI source
+- `.github/workflows/` — CI/CD
 - `memory/` — daily logs
 - `canvas/`
 
 **Gitignored (chỉ local):**
-- `openclaw-src/` — upstream reference (có .git riêng)
+- `openclaw-src/` — fork repo (có .git riêng)
 - `openclaw-vietnam/` — fork (có .git riêng)
 - `apple-showcase/` — Next.js demo
 - `projects/` — Vibecode demo outputs
 - `skills/` — symlinks
-- `node_modules/`, `.env*`, `**/auth-profiles.json`
+- `node_modules/`, `.env*`, `**/auth-profiles.json`, playwright artifacts
 
 ---
 
@@ -98,14 +106,19 @@ clawd/                          ← Root workspace
 - Chat trực tiếp với AI (Anthropic, OpenAI, Google)
 - API Key Banner — nhập key trên composer, lưu vào gateway qua RPC
 - Auto-reconnect WebSocket (GatewayBrowserClient handles)
-- Song ngữ Việt/Anh (i18n)
-- Split panel layout (Claude-style)
-- Device auth + session key management
+- Song ngữ Việt/Anh (i18n — 1300+ strings mỗi ngôn ngữ)
+- Split panel layout (Claude-style) + resizable divider
+- Device auth (Ed25519) + session key management
 - Refined minimal UI: 2-group sidebar (Core + Admin), flat monochrome bg, bar indicators
 - **Session UX** — card/table views, inline editing, quick-resume switcher
 - **Memory System** — UserFact store, LLM extraction, category filter, search, chat indicator
 - **Device Guard** — pairing approval, token lifecycle, audit timeline, status badges
 - **Skill System** — catalog browser, filter/search, settings panel (JSON Schema → form), env vars
+- **Agent Tabs** — multi-agent tab bar, unread tracking, agent preset picker
+- **Voice Input** — Web Speech API, TTS, Vietnamese voice detection
+- **Copilot** — Projects registry, Deploy workflow (streaming logs), Preview management
+- **Mobile** — responsive layout, touch targets, input font sizes
+- **CI/CD** — GitHub Actions (test + build), vendor chunking, lazy view loading
 
 **Cách chạy:**
 ```bash
@@ -231,13 +244,18 @@ Hệ thống files cho AI agent persistence:
 ## Commits (main branch)
 
 ```
+11d843b Handover v2.0: update status with Copilot plugin + Phase C+D
+1fe34bf Add handover docs and gitignore playwright artifacts
+f3e8d5c Phase C+D: Copilot UI views + gateway RPC integration
+b08dd9a Phase 2: Agent tabs, voice input, split view
+09b0957 Fix session switcher dropdown: sync CSS with HTML class names
+6b02c72 Mobile responsive: touch targets, input font sizes, component layouts
+55321ae Bundle optimization: vendor chunks + lazy view loading
+0fc999b Sync pnpm-lock.yaml with package.json
+0893c30 Add CI/CD pipeline and update handover docs
 e4b8e46 Bom Ecosystem Feb 2026: Session UX, Memory, Device Guard, Skill System
-bc0ce7b Project x-ray: update HANDOVER.md and add memory log 2026-02-09
-234e40a Update HANDOVER.md with refined minimal UI changes
 a14b2a1 Refined minimal UI: simplify sidebar to 2 groups, flatten bg, modernize styles
-513f8de Update HANDOVER.md
 f213410 Add design skills suite: frontend-design, theme-factory, canvas-design
-2a18956 Update HANDOVER.md with latest changes and project status
 19a76cd Add README with Vibecode Kit methodology and Vietnamese-first focus
 a57431f Harden .gitignore and remove personal info before public release
 6189025 Redesign API key input: dedicated banner + fix WebSocket reconnect
@@ -248,7 +266,7 @@ db608e1 Initial commit: Bờm workspace + Control UI
 
 ## Feb 2026 Development Cycle (Hoàn tất)
 
-4 feature tracks, 10 phases, 53 files changed (+6414 lines), 368 UI tests (30 files), 0 failures.
+8 feature tracks, 12 phases, 128 source files, ~25k LOC, 443 UI tests (34 files), 0 failures.
 
 | Feature | Trạng thái | Highlights |
 |---------|-----------|------------|
@@ -256,22 +274,31 @@ db608e1 Initial commit: Bờm workspace + Control UI
 | Memory System | ✅ | UserFact CRUD, LLM extraction, category filter, search, chat indicator |
 | Device Guard | ✅ | 10/10 gaps filled — pairing, tokens, audit, CORS, IP, scopes |
 | Skill System | ✅ | `skills.catalog` + `skills.configSchema` RPCs, catalog UI, settings panel |
+| Agent Tabs + Split View | ✅ | Multi-agent tabs, unread tracking, dual-pane, resizable divider |
+| Voice Input | ✅ | Speech recognition, TTS, Vietnamese voice support |
+| Copilot Plugin | ✅ | 23 RPC handlers (gateway), Projects/Deploy/Preview UI views |
+| Mobile + CI/CD | ✅ | Responsive layout, vendor chunks, GitHub Actions pipeline |
 
 ## Việc cần làm (TODO)
 
 ### bom-control-ui
-- [ ] Mobile responsive testing
-- [ ] Optimize bundle size
-- [ ] E2E tests (Playwright — screenshot baselines exist but not CI-integrated)
+- [ ] E2E tests tích hợp CI (Playwright screenshot baselines đã có)
+- [ ] Performance profiling & optimization
+- [ ] Accessibility (a11y) audit
+- [ ] PWA support (service worker, offline mode)
+
+### Copilot Plugin
+- [ ] Unit tests cho handler files (projects, deploy, preview)
+- [ ] VAT scripts validation (check scripts exist on startup)
+- [ ] Retry logic cho script bridge (transient failures)
 
 ### Workspace
 - [ ] Thêm project types cho Vibecode skill (landing, saas, dashboard)
 - [ ] Điền thêm TOOLS.md (machines, SSH, preferences)
-- [ ] Cấu hình BOOT.md cho gateway startup tasks
 
 ### openclaw-vietnam
 - [ ] Theo dõi upstream releases
-- [ ] Test update indicator với version mới
+- [ ] Đồng bộ build system (tsc vs tsdown)
 
 ---
 

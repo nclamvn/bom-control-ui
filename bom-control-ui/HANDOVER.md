@@ -1,34 +1,43 @@
 # HANDOVER - BỜM Control UI
 
-> Cập nhật: 2026-02-12
+> Cập nhật: 2026-02-16
 
 ## Tổng quan dự án
 
 **BỜM Control UI** — Giao diện điều khiển tiếng Việt cho OpenClaw Gateway.
 Viết bằng LitElement + TypeScript + Vite. Xây dựng bằng Vibecode Kit.
 
-## Trạng thái hiện tại: ✅ HOẠT ĐỘNG — SẴN SÀNG PUBLIC
+## Trạng thái hiện tại: ✅ PRODUCTION-READY
 
-- Kết nối Gateway: **OK** (auto-reconnect)
-- Device Auth: **OK** (pairing, token lifecycle, audit trail)
+- Kết nối Gateway: **OK** (auto-reconnect, Ed25519 device auth)
 - Chat: **OK** (gửi/nhận, markdown, session switcher, memory indicator)
 - API Key: **OK** (banner trên composer, lưu trực tiếp vào gateway)
 - Sessions: **OK** (card/table views, inline editing, quick-resume)
 - Memory: **OK** (UserFact CRUD, LLM extraction, category filter, search)
 - Skills: **OK** (catalog browser, settings panel, env vars, install/toggle)
-- UI tiếng Việt: **OK** (song ngữ Việt/Anh — toàn bộ features)
-- Icons: **OK** (outline style)
-- Split Panel Layout: **OK** (Claude-style)
-- Bảo mật: **OK** (không có secrets trong repo, .gitignore đầy đủ)
-- Tests: **368 tests** (30 files), **0 failures**
+- Device Guard: **OK** (pairing, token lifecycle, audit trail, status badges)
+- Agent Tabs: **OK** (multi-agent, unread tracking, split view, resizable divider)
+- Voice: **OK** (speech recognition, TTS, Vietnamese voice detection)
+- Copilot: **OK** (projects registry, deploy workflow + streaming logs, preview management)
+- Mobile: **OK** (responsive layout, touch targets, input font sizes)
+- UI tiếng Việt: **OK** (song ngữ Việt/Anh — 1300+ strings mỗi ngôn ngữ)
+- CI/CD: **OK** (GitHub Actions — test + build, vendor chunking)
+- Tests: **443 tests** (34 files), **0 failures**
+- Source: **128 files**, **~25k LOC**
 
 ## Commits
 
 ```
+11d843b Handover v2.0: update status with Copilot plugin + Phase C+D
+f3e8d5c Phase C+D: Copilot UI views + gateway RPC integration
+b08dd9a Phase 2: Agent tabs, voice input, split view
+09b0957 Fix session switcher dropdown: sync CSS with HTML class names
+6b02c72 Mobile responsive: touch targets, input font sizes, component layouts
+55321ae Bundle optimization: vendor chunks + lazy view loading
+0893c30 Add CI/CD pipeline and update handover docs
 e4b8e46 Bom Ecosystem Feb 2026: Session UX, Memory, Device Guard, Skill System
 a14b2a1 Refined minimal UI: simplify sidebar to 2 groups, flatten bg, modernize styles
 f213410 Add design skills suite: frontend-design, theme-factory, canvas-design
-19a76cd Add README with Vibecode Kit methodology and Vietnamese-first focus
 a57431f Harden .gitignore and remove personal info before public release
 6189025 Redesign API key input: dedicated banner + fix WebSocket reconnect
 db608e1 Initial commit: Bờm workspace + Control UI
@@ -191,14 +200,103 @@ Catalog browser với filter/search, settings panel (JSON Schema → form), env 
 - One-click install for not-installed skills
 - Legacy compatibility: workspace skills section preserved
 
+### 6. Phase 2 — Agent Tabs, Voice Input, Split View
+
+Multi-agent support với tabs, voice input, và split view.
+
+**Files:**
+| File | Mô tả |
+|------|-------|
+| `components/agent-tabs.ts` | Tab bar: multi-agent switching, unread tracking |
+| `components/split-view.ts` | Dual-pane chat layout |
+| `controllers/agent-tabs.ts` | Tab management: create, close, focus, unread |
+| `controllers/voice.ts` | Speech recognition + TTS + Vietnamese voice detection |
+| `speech.d.ts` | Web Speech API type definitions |
+
+**Tests:**
+| File | Mô tả |
+|------|-------|
+| `components/agent-tabs.test.ts` | 162 lines — tab bar rendering + actions |
+| `components/split-view.test.ts` | 90 lines — split view layout |
+| `controllers/agent-tabs.test.ts` | 235 lines — tab state management |
+| `controllers/voice.test.ts` | 502 lines — speech/TTS logic |
+
+**Key features:**
+- Agent tabs: create, close, switch, unread indicators (per tab)
+- Split view: dual-pane, resizable divider, focus pane tracking
+- Voice: Web Speech API recognition, TTS for AI responses, Vietnamese voice detection
+- Voice modes: idle, listening, speaking, error
+- Agent presets: pick from available agents
+
+### 7. Phase C+D — Copilot Plugin + UI Views
+
+Full deploy/preview workflow with gateway RPC integration.
+
+**Gateway (openclaw-src/extensions/copilot/):**
+| File | Mô tả |
+|------|-------|
+| `index.ts` | Plugin entry: 23 RPC handler registrations |
+| `script-bridge.ts` | `executeScript()` + `executeScriptStream()` → VAT bash |
+| `projects.ts` | 8 handlers: list/get/scan/archive/unarchive/remove/touch/rescan |
+| `deploy.ts` | 8 handlers: precheck/start/cancel/history/logs/rollback/status/healthCheck |
+| `preview.ts` | 5 handlers: list/create/promote/delete/clean |
+| `system.ts` | 2 handlers: health/fix |
+
+**UI Files:**
+| File | Mô tả |
+|------|-------|
+| `controllers/deploys.ts` | Deploy state, project/deploy/preview RPC calls (246 lines) |
+| `controllers/projects.ts` | Project operations thin shim (16 lines) |
+| `views/projects-view.ts` | Project registry: scan, archive, touch (135 lines) |
+| `views/deploy-view.ts` | Deploy workflow: precheck, start, streaming logs (196 lines) |
+| `views/preview-view.ts` | Preview management: create, promote, delete (216 lines) |
+| `components/terminal-output.ts` | Deploy log terminal display (52 lines) |
+| `components/file-diff-viewer.ts` | File diff display (50 lines) |
+
+**CSS:**
+| File | Mô tả |
+|------|-------|
+| `styles/projects.css` | Project cards + registry layout (114 lines) |
+| `styles/deploy.css` | Deploy workflow + terminal styles (260 lines) |
+| `styles/preview.css` | Preview cards + management (172 lines) |
+
+**RPC Methods (copilot.*):**
+- `copilot.projects.list/get/scan/archive/unarchive/remove/touch/rescan`
+- `copilot.deploy.precheck/start/cancel/history/logs/rollback/status/healthCheck`
+- `copilot.preview.list/create/promote/delete/clean`
+- `copilot.system.health/fix`
+
+**Events:** `copilot.deploy.log` (streaming), `copilot.deploy.complete`
+
+**Authorization:** 7 read + 16 write methods added to gateway scope sets.
+
+### 8. Mobile Responsive + Bundle Optimization + CI/CD
+
+**Mobile:**
+- Touch target optimization (min 44px)
+- Input font sizes (prevent iOS zoom)
+- Component layout adjustments for small screens
+- Responsive sidebar collapse
+
+**Bundle:**
+- Vendor chunks: `vendor-lit`, `vendor-markdown`, `vendor-crypto`
+- Lazy view loading (code splitting per view)
+- Sourcemaps always enabled
+
+**CI/CD (`.github/workflows/`):**
+- `ci.yml`: push/PR → test → build → upload dist/ artifact (7 days)
+- `pr-check.yml`: PR only → test (no build)
+- Node 22, pnpm 10, Playwright Chromium
+
 #### Cross-cutting
 
-**Navigation:** 2-group sidebar structure
+**Navigation:** 2-group sidebar + copilot tabs
 - Core (⌘1): chat, overview, channels, **memory**
 - Admin (⌘2): config, **skills**, nodes, debug, logs
-- Sessions: accessible via Overview hoặc direct URL (không trong sidebar)
+- Copilot: **projects**, **deploy**, **preview** (new tabs)
+- Sessions: accessible via Overview hoặc direct URL
 
-**I18n:** Tất cả 4 features có full i18n (en + vi) — 140+ strings mỗi ngôn ngữ.
+**I18n:** Tất cả features có full i18n (en + vi) — 1300+ strings mỗi ngôn ngữ.
 
 **Controller pattern (all features):**
 1. State interface → loading/data/error flags
@@ -206,7 +304,7 @@ Catalog browser với filter/search, settings panel (JSON Schema → form), env 
 3. View functions → Lit templates từ state
 4. `app.ts` (state) + `app-render.ts` (tab switching + event wiring)
 
-**New components CSS:** `styles/components.css` (+1000 lines) — shared styles cho tất cả components mới.
+**Component CSS:** `styles/components.css` (shared styles), `styles/projects.css`, `styles/deploy.css`, `styles/preview.css`.
 
 ---
 
@@ -249,7 +347,7 @@ src/
 │   ├── types.ts              # Gateway types (+34 lines: Session/Memory/Skill types)
 │   ├── navigation.ts         # Tabs + routing (+memory tab)
 │   ├── i18n/                 # vi.ts, en.ts (+140 strings each)
-│   ├── components/           # ★ New reusable components
+│   ├── components/           # Reusable components (20 files)
 │   │   ├── session-card.ts           # Session card (metadata, actions)
 │   │   ├── session-switcher.ts       # Chat header session dropdown
 │   │   ├── memory-chip.ts            # UserFact card (edit/verify/delete)
@@ -259,32 +357,47 @@ src/
 │   │   ├── skill-card.ts             # Skill catalog card
 │   │   ├── skill-settings-panel.ts   # Slide-in settings panel
 │   │   ├── skill-status-badge.ts     # Skill status badge
-│   │   └── schema-form.ts            # JSON Schema → form renderer
-│   ├── controllers/          # ★ New/updated controllers
+│   │   ├── schema-form.ts            # JSON Schema → form renderer
+│   │   ├── agent-tabs.ts            # Multi-agent tab bar
+│   │   ├── split-view.ts            # Dual-pane chat layout
+│   │   ├── terminal-output.ts       # Deploy log terminal display
+│   │   └── file-diff-viewer.ts      # File diff display
+│   ├── controllers/          # State management (27 files)
 │   │   ├── memory.ts                 # Memory CRUD + indicator
-│   │   ├── skills.ts                 # Skills catalog + settings (+187 lines)
+│   │   ├── skills.ts                 # Skills catalog + settings
 │   │   ├── devices.ts                # Device pairing + tokens
 │   │   ├── sessions.ts              # Session state + RPCs
-│   │   └── chat.ts                   # Chat controller (+memory context)
+│   │   ├── chat.ts                   # Chat controller (+memory context)
+│   │   ├── agent-tabs.ts            # Multi-agent tab management
+│   │   ├── voice.ts                 # Speech recognition + TTS
+│   │   ├── deploys.ts               # Deploy state + project/deploy/preview RPCs
+│   │   └── projects.ts              # Project operations (thin shim)
 │   ├── views/
-│   │   ├── chat.ts           # Chat view (+session switcher, memory indicator)
-│   │   ├── sessions.ts       # Sessions view (+101 lines: card/table)
-│   │   ├── skills.ts         # Skills view (+159 lines: catalog UI)
-│   │   ├── memory-view.ts    # ★ New: memory management view
-│   │   ├── nodes.ts          # Nodes view (+64 lines: device guard section)
-│   │   └── overview.ts       # Overview (+16 lines: session link)
+│   │   ├── chat.ts           # Chat view (+switcher, memory, voice, tabs)
+│   │   ├── sessions.ts       # Sessions view (card/table)
+│   │   ├── skills.ts         # Skills view (catalog UI)
+│   │   ├── memory-view.ts    # Memory management view
+│   │   ├── nodes.ts          # Nodes view (+device guard section)
+│   │   ├── overview.ts       # Overview (+session link)
+│   │   ├── projects-view.ts  # Project registry management
+│   │   ├── deploy-view.ts    # Deploy workflow + streaming logs
+│   │   └── preview-view.ts   # Preview environment management
 │   ├── chat/
 │   │   └── grouped-render.ts # Message grouping + rendering
 │   └── connection/
 │       └── connection-manager.ts  # UI state tracker for connection
 └── styles/
-    ├── components.css         # ★ New: shared component styles (+1000 lines)
+    ├── components.css         # Shared component styles (1000+ lines)
+    ├── projects.css           # Project registry styles (114 lines)
+    ├── deploy.css             # Deploy workflow + terminal (260 lines)
+    ├── preview.css            # Preview management (172 lines)
     ├── chat/
     │   ├── composer.css       # Composer + API key banner styles
     │   ├── grouped.css        # Chat message styles
     │   ├── layout.css         # Chat layout
     │   ├── sidebar.css        # Split panel sidebar
-    │   └── text.css           # Text formatting
+    │   ├── text.css           # Text formatting
+    │   └── split-view.css     # Dual-pane chat layout
     ├── layout.css             # Main layout
     ├── layout.mobile.css      # Mobile responsive
     ├── connection.css         # Connection banner
@@ -318,9 +431,9 @@ src/
 
 ## Tests
 
-**368 tests, 30 files, 0 failures.**
+**443 tests, 34 files, 0 failures.**
 
-| Test file | Tests | Mô tả |
+| Test file | Lines | Mô tả |
 |-----------|-------|-------|
 | `components/session-card.test.ts` | 176 | Session card rendering + actions |
 | `components/session-switcher.test.ts` | 222 | Session switcher dropdown |
@@ -329,21 +442,40 @@ src/
 | `components/device-status-badge.test.ts` | 149 | Device status badges |
 | `components/audit-timeline.test.ts` | 115 | Audit event timeline |
 | `components/skill-card.test.ts` | 146 | Skill catalog card |
+| `components/agent-tabs.test.ts` | 162 | Agent tab bar |
+| `components/split-view.test.ts` | 90 | Split view layout |
 | `controllers/memory.test.ts` | 279 | Memory controller RPCs |
 | `controllers/skills.test.ts` | 378 | Skills controller (catalog + settings) |
-| `controllers/chat.test.ts` | +187 | Chat controller (memory integration) |
+| `controllers/chat.test.ts` | 187+ | Chat controller (memory integration) |
+| `controllers/agent-tabs.test.ts` | 235 | Agent tab management |
+| `controllers/voice.test.ts` | 502 | Voice/TTS logic |
 | `connection/connection-manager.test.ts` | 252 | Connection manager |
 | `views/sessions.test.ts` | 137 | Sessions view |
 | `views/memory-view.test.ts` | 169 | Memory view |
 | `views/skills.test.ts` | 196 | Skills view |
-| `views/chat.test.ts` | +227 | Chat view (switcher + indicator) |
+| `views/chat.test.ts` | 227+ | Chat view (switcher + indicator) |
+| `views/navigation.test.ts` | — | Navigation routing |
+| `chat/message-extract.test.ts` | — | Message text extraction |
+| `chat/message-normalizer.test.ts` | — | Message normalization |
+| `chat/tool-helpers.test.ts` | — | Tool call helpers |
+| `markdown.test.ts` | — | Markdown rendering |
+| `format.test.ts` | — | Formatting utilities |
+| `uuid.test.ts` | — | UUID generation |
+| `app-settings.test.ts` | — | App settings |
+| Browser tests (4 files) | — | Markdown, config form, focus mode, navigation |
 
-Run: `pnpm test` (Vitest)
+Run: `pnpm test` (Vitest + Playwright Chromium, headless)
 
 ## RPC Reference (Gateway API)
 
 | RPC Method | Feature | Mô tả |
 |------------|---------|-------|
+| `connect` | Auth | Handshake (client info, device auth, scopes) |
+| `chat.send` | Chat | Gửi tin nhắn chat |
+| `chat.abort` | Chat | Hủy chat đang chạy |
+| `chat.history` | Chat | Lấy lịch sử chat |
+| `auth.profiles.set` | Auth | Lưu API key |
+| `config.get/set/schema` | Config | Cấu hình gateway |
 | `sessions.list` | Sessions | List sessions with filters |
 | `sessions.patch` | Sessions | Update session (label, levels) |
 | `sessions.delete` | Sessions | Delete session + transcript |
@@ -354,24 +486,33 @@ Run: `pnpm test` (Vitest)
 | `memory.extract` | Memory | LLM-extract facts from session |
 | `memory.getActiveContext` | Memory | Facts active for current session |
 | `device.pair.list` | Device Guard | List pending + paired devices |
-| `device.pair.approve` | Device Guard | Approve pairing request |
-| `device.pair.reject` | Device Guard | Reject pairing request |
-| `device.token.rotate` | Device Guard | Rotate device token |
-| `device.token.revoke` | Device Guard | Revoke device token |
+| `device.pair.approve/reject` | Device Guard | Approve/reject pairing |
+| `device.token.rotate/revoke` | Device Guard | Token lifecycle |
 | `audit.list` | Device Guard | Audit timeline for device |
 | `skills.catalog` | Skills | List all available skills |
 | `skills.configSchema` | Skills | JSON schema + UI hints for skill |
 | `skills.status` | Skills (legacy) | Workspace skill eligibility |
-| `skills.update` | Skills | Toggle enabled, update env vars |
-| `skills.install` | Skills | Install skill from catalog |
+| `skills.update/install` | Skills | Toggle/install skill |
+| `copilot.projects.*` | Copilot | 8 methods: list/get/scan/archive/unarchive/remove/touch/rescan |
+| `copilot.deploy.*` | Copilot | 8 methods: precheck/start/cancel/history/logs/rollback/status/healthCheck |
+| `copilot.preview.*` | Copilot | 5 methods: list/create/promote/delete/clean |
+| `copilot.system.*` | Copilot | 2 methods: health/fix |
+| `agents.list` | Agents | List available agents |
+| `nodes.list` | Nodes | List cluster nodes |
+| `channels.status` | Channels | Channel status |
+| `cron.list/create/delete/runs` | Cron | Cron job management |
+| `status/health` | System | Gateway status + health |
+| `logs.read` | Logs | Read log files |
 
 ## Việc cần làm tiếp (TODO)
 
-- [ ] Mobile responsive testing
-- [ ] Optimize bundle size
-- [ ] E2E tests (Playwright — screenshot baselines exist but not CI-integrated)
+- [ ] E2E tests tích hợp CI (Playwright screenshot baselines đã có)
+- [ ] Performance profiling & optimization
+- [ ] Accessibility (a11y) audit
+- [ ] PWA support (service worker, offline mode)
 - [ ] Memory: bulk operations (delete multiple facts)
 - [ ] Skills: search debounce, pagination for large catalogs
+- [ ] Copilot: unit tests cho handler files
 
 ---
 
