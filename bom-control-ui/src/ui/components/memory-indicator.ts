@@ -10,57 +10,76 @@ export type MemoryIndicatorProps = {
   totalFacts: number;
   expanded: boolean;
   connected: boolean;
+  showThinking: boolean;
+  disableThinking: boolean;
   onToggle: () => void;
+  onThinkingToggle: () => void;
   onExpand: () => void;
 };
 
 export function renderMemoryIndicator(props: MemoryIndicatorProps): TemplateResult {
-  const { enabled, facts, totalFacts, expanded, connected, onToggle, onExpand } = props;
+  const {
+    enabled, facts, totalFacts, expanded, connected,
+    showThinking, disableThinking,
+    onToggle, onThinkingToggle, onExpand,
+  } = props;
   const count = facts.length;
   const mem = t().memory;
 
+  // Single brain icon: click = toggle thinking, visual state reflects both
+  const brainActive = showThinking || (enabled && totalFacts > 0);
+  const brainTitle = disableThinking
+    ? t().chat.disabledDuringSetup
+    : t().chat.toggleThinking;
+
+  const brainBtn = html`
+    <button
+      class="btn btn--sm btn--icon memory-indicator__brain ${brainActive ? "active" : ""}"
+      ?disabled=${disableThinking}
+      @click=${onThinkingToggle}
+      aria-pressed=${showThinking}
+      title=${brainTitle}
+    >
+      ${icons.brain}
+    </button>
+  `;
+
+  // Memory label/badge: click = toggle memory or expand facts
   if (!enabled) {
     return html`
-      <span class="memory-indicator memory-indicator--off" title=${mem.indicatorOff}>
+      <span class="memory-indicator memory-indicator--off">
+        ${brainBtn}
         <button
-          class="btn btn--sm btn--icon memory-indicator__toggle"
+          class="memory-indicator__label-btn"
           ?disabled=${!connected}
           @click=${onToggle}
           title=${mem.indicatorToggle}
         >
-          ${icons.brain}
+          ${mem.indicatorOff}
         </button>
-        <span class="memory-indicator__label memory-indicator__label--off">${mem.indicatorOff}</span>
       </span>
     `;
   }
 
   if (totalFacts === 0) {
     return html`
-      <span class="memory-indicator memory-indicator--empty" title=${mem.indicatorNone}>
+      <span class="memory-indicator memory-indicator--empty">
+        ${brainBtn}
         <button
-          class="btn btn--sm btn--icon memory-indicator__toggle"
+          class="memory-indicator__label-btn"
           ?disabled=${!connected}
           @click=${onToggle}
           title=${mem.indicatorToggle}
         >
-          ${icons.brain}
+          ${mem.indicatorNone}
         </button>
-        <span class="memory-indicator__label">${mem.indicatorNone}</span>
       </span>
     `;
   }
 
   return html`
     <span class="memory-indicator memory-indicator--active">
-      <button
-        class="btn btn--sm btn--icon memory-indicator__toggle active"
-        ?disabled=${!connected}
-        @click=${onToggle}
-        title=${mem.indicatorToggle}
-      >
-        ${icons.brain}
-      </button>
+      ${brainBtn}
       <button
         class="memory-indicator__badge"
         @click=${onExpand}

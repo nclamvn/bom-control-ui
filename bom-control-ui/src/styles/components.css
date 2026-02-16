@@ -39,12 +39,15 @@
 
 /* Elevated card variant */
 .card--elevated {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.03) 0%,
-    rgba(255, 255, 255, 0.01) 100%
-  );
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0.01) 100%
+    ),
+    var(--card);
   box-shadow: var(--shadow-md);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 /* Selected state */
@@ -55,12 +58,13 @@
 
 /* Card with accent glow on hover */
 .card--glow:hover {
-  border-color: rgba(255, 92, 92, 0.3);
-  box-shadow: var(--shadow-md), 0 0 20px rgba(255, 92, 92, 0.1);
+  border-color: rgba(242, 95, 76, 0.25);
+  box-shadow: var(--shadow-md), 0 0 30px var(--accent-glow);
 }
 
 .card-title {
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-strong);
@@ -161,10 +165,11 @@
 }
 
 .stat-value {
-  font-size: 28px;
+  font-family: var(--font-display);
+  font-size: 30px;
   font-weight: 700;
   margin-top: 4px;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   line-height: 1.1;
   color: var(--text-strong);
 }
@@ -2620,6 +2625,19 @@
   align-items: center;
   gap: 4px;
   cursor: pointer;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  padding: 0 6px;
+  height: 26px;
+  color: var(--muted);
+  transition: background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.session-switcher__trigger:hover {
+  background: var(--bg-hover);
+  color: var(--text);
 }
 
 .session-switcher__panel {
@@ -2931,70 +2949,95 @@
 .memory-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   position: relative;
 }
 
+.memory-indicator__brain svg,
 .memory-indicator__toggle svg {
   width: 16px;
   height: 16px;
 }
 
-.memory-indicator__label {
-  font-size: 11px;
+.memory-indicator__label-btn {
+  font-size: 10px;
+  font-family: var(--font-body);
   color: var(--muted);
+  white-space: nowrap;
+  padding: 2px 6px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
 }
 
-.memory-indicator__label--off {
-  text-decoration: line-through;
-  opacity: 0.6;
+.memory-indicator__label-btn:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+
+.memory-indicator__label-btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.memory-indicator--off .memory-indicator__label-btn {
+  opacity: 0.5;
+}
+
+.memory-indicator--off .memory-indicator__label-btn:hover {
+  opacity: 0.8;
 }
 
 .memory-indicator__badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  font-size: 11px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
   font-weight: 600;
+  font-family: var(--font-body);
   color: var(--accent);
-  background: var(--accent-bg, rgba(99, 102, 241, 0.1));
-  border: 1px solid var(--accent);
-  border-radius: 9px;
+  background: var(--accent-subtle);
+  border: none;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
 .memory-indicator__badge:hover {
-  background: var(--accent-bg-hover, rgba(99, 102, 241, 0.2));
+  background: rgba(242, 95, 76, 0.2);
 }
 
 .memory-indicator__panel {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   right: 0;
-  z-index: 100;
+  z-index: var(--z-dropdown);
   min-width: 280px;
   max-width: 360px;
   max-height: 320px;
   overflow-y: auto;
-  background: var(--card);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md, 8px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  margin-top: 4px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: rise 0.15s var(--ease-out);
 }
 
 .memory-indicator__panel-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--fg);
+  font-family: var(--font-display);
+  color: var(--text-strong);
   border-bottom: 1px solid var(--border);
 }
 

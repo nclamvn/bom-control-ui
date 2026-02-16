@@ -60,22 +60,25 @@
 
 /* Avatar Styles */
 .chat-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: var(--panel-strong);
   display: grid;
   place-items: center;
+  font-family: var(--font-display);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   flex-shrink: 0;
-  align-self: flex-end; /* Align with last message in group */
-  margin-bottom: 4px; /* Optical alignment */
+  align-self: flex-end;
+  margin-bottom: 4px;
+  border: 1px solid var(--border-subtle);
 }
 
 .chat-avatar.user {
   background: var(--accent-subtle);
   color: var(--accent);
+  border-color: rgba(242, 95, 76, 0.15);
 }
 
 .chat-avatar.assistant {

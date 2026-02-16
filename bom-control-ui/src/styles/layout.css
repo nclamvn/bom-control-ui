@@ -138,16 +138,17 @@
 }
 
 .brand-title {
-  font-size: 16px;
+  font-family: var(--font-display);
+  font-size: 17px;
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   line-height: 1.1;
   color: var(--text-strong);
 }
 
-/* "claw" part in red */
+/* "claw" part in accent */
 .brand-sub .brand-claw {
-  color: #dc2626;
+  color: var(--accent);
 }
 
 .brand-sub {
@@ -552,7 +553,7 @@
 
 .nav-item.active {
   color: var(--text-strong);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--accent-subtle);
   padding-left: 16px;
 }
 
@@ -562,10 +563,11 @@
   left: 4px;
   top: 50%;
   transform: translateY(-50%);
-  width: 2px;
-  height: 16px;
-  border-radius: 1px;
+  width: 2.5px;
+  height: 18px;
+  border-radius: 2px;
   background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .nav-item.active .nav-item__icon {
@@ -676,37 +678,39 @@
   overflow-x: hidden;
 }
 
-/* Dark theme: flat monochrome — all areas share #121212 */
+/* Dark theme: deep obsidian */
 :root[data-theme="dark"] .topbar,
 :root:not([data-theme="light"]) .topbar {
-  background: #121212;
-  border-bottom-color: rgba(255, 255, 255, 0.06);
+  background: var(--bg);
+  border-bottom-color: var(--border);
+  backdrop-filter: blur(12px);
 }
 
 :root[data-theme="dark"] .nav,
 :root:not([data-theme="light"]) .nav {
-  background: #121212;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg);
+  border-right: 1px solid var(--border);
 }
 
 :root[data-theme="dark"] .content,
 :root:not([data-theme="light"]) .content {
-  background: #121212;
+  background: var(--bg);
 }
 
-/* Light theme: flat white — all areas share #ffffff */
+/* Light theme: warm ivory */
 :root[data-theme="light"] .topbar {
-  background: #ffffff;
-  border-bottom-color: rgba(0, 0, 0, 0.06);
+  background: var(--bg);
+  border-bottom-color: var(--border);
+  backdrop-filter: blur(12px);
 }
 
 :root[data-theme="light"] .nav {
-  background: #ffffff;
-  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--bg);
+  border-right: 1px solid var(--border);
 }
 
 :root[data-theme="light"] .content {
-  background: #ffffff;
+  background: var(--bg);
 }
 
 .content--chat {
@@ -741,9 +745,10 @@
 }
 
 .page-title {
-  font-size: 22px;
+  font-family: var(--font-display);
+  font-size: 24px;
   font-weight: 600;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.04em;
   line-height: 1.15;
   color: var(--text-strong);
 }
@@ -768,7 +773,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding: 4px 0;
+  padding: 8px 0;
   margin: 0;
   max-height: none;
   height: auto;
@@ -794,10 +799,7 @@
 }
 
 .content--chat .chat-controls {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  height: 26px;
+  /* Inherits from chat/layout.css — no overrides needed */
 }
 
 /* ===========================================

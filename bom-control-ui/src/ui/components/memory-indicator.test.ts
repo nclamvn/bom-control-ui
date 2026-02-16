@@ -26,7 +26,10 @@ function createProps(overrides: Partial<MemoryIndicatorProps> = {}): MemoryIndic
     totalFacts: 5,
     expanded: false,
     connected: true,
+    showThinking: false,
+    disableThinking: false,
     onToggle: () => undefined,
+    onThinkingToggle: () => undefined,
     onExpand: () => undefined,
     ...overrides,
   };
@@ -78,12 +81,28 @@ describe("memory-indicator", () => {
     expect(panel).toBeNull();
   });
 
-  it("calls onToggle when toggle button clicked", () => {
+  it("renders single brain icon", () => {
+    const container = document.createElement("div");
+    render(renderMemoryIndicator(createProps()), container);
+    const brainBtn = container.querySelector(".memory-indicator__brain");
+    expect(brainBtn).not.toBeNull();
+  });
+
+  it("calls onThinkingToggle when brain icon clicked", () => {
+    const container = document.createElement("div");
+    const onThinkingToggle = vi.fn();
+    render(renderMemoryIndicator(createProps({ onThinkingToggle })), container);
+    const brainBtn = container.querySelector(".memory-indicator__brain") as HTMLButtonElement;
+    brainBtn?.click();
+    expect(onThinkingToggle).toHaveBeenCalled();
+  });
+
+  it("calls onToggle when label button clicked (off state)", () => {
     const container = document.createElement("div");
     const onToggle = vi.fn();
-    render(renderMemoryIndicator(createProps({ onToggle })), container);
-    const toggleBtn = container.querySelector(".memory-indicator__toggle") as HTMLButtonElement;
-    toggleBtn?.click();
+    render(renderMemoryIndicator(createProps({ enabled: false, onToggle })), container);
+    const labelBtn = container.querySelector(".memory-indicator__label-btn") as HTMLButtonElement;
+    labelBtn?.click();
     expect(onToggle).toHaveBeenCalled();
   });
 
@@ -96,14 +115,21 @@ describe("memory-indicator", () => {
     expect(onExpand).toHaveBeenCalled();
   });
 
-  it("disables toggle when not connected", () => {
+  it("disables label button when not connected", () => {
     const container = document.createElement("div");
     render(
-      renderMemoryIndicator(createProps({ connected: false })),
+      renderMemoryIndicator(createProps({ enabled: false, connected: false })),
       container,
     );
-    const toggleBtn = container.querySelector(".memory-indicator__toggle") as HTMLButtonElement;
-    expect(toggleBtn?.disabled).toBe(true);
+    const labelBtn = container.querySelector(".memory-indicator__label-btn") as HTMLButtonElement;
+    expect(labelBtn?.disabled).toBe(true);
+  });
+
+  it("marks brain icon active when thinking is shown", () => {
+    const container = document.createElement("div");
+    render(renderMemoryIndicator(createProps({ showThinking: true })), container);
+    const brainBtn = container.querySelector(".memory-indicator__brain");
+    expect(brainBtn?.classList.contains("active")).toBe(true);
   });
 
   it("shows category in expanded panel items", () => {

@@ -2,20 +2,28 @@
 .chat-composer.claude-style {
   background: var(--bg-elevated, #1a1d25);
   border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 0;
   margin: 0 auto 8px;
-  width: 640px;
-  max-width: calc(100% - 32px); /* Full width minus padding */
+  width: calc(100% - 52px);
+  max-width: 640px;
   position: relative;
-  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.2));
+  box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.3));
   box-sizing: border-box;
+  transition:
+    border-color var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.chat-composer.claude-style:focus-within {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-strong);
 }
 
 :root[data-theme="light"] .chat-composer.claude-style {
   background: var(--bg-elevated, #ffffff);
   border-color: var(--border, rgba(0, 0, 0, 0.1));
-  box-shadow: var(--shadow-sm, 0 1px 4px rgba(0, 0, 0, 0.08));
+  box-shadow: var(--shadow-md, 0 4px 16px rgba(0, 0, 0, 0.06));
 }
 
 .composer-main {

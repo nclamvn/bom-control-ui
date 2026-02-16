@@ -187,28 +187,14 @@ export function renderChatControls(state: AppViewState) {
         ${refreshIcon}
       </button>
       <span class="chat-controls__separator">|</span>
-      <button
-        class="btn btn--sm btn--icon ${showThinking ? "active" : ""}"
-        ?disabled=${disableThinkingToggle}
-        @click=${() => {
-          if (disableThinkingToggle) return;
-          state.applySettings({
-            ...state.settings,
-            chatShowThinking: !state.settings.chatShowThinking,
-          });
-        }}
-        aria-pressed=${showThinking}
-        title=${disableThinkingToggle ? t().chat.disabledDuringSetup : t().chat.toggleThinking}
-      >
-        ${icons.brain}
-      </button>
-      <span class="chat-controls__separator">|</span>
       ${renderMemoryIndicator({
         enabled: state.memoryIndicatorEnabled,
         facts: state.memoryIndicatorFacts,
         totalFacts: state.memoryIndicatorTotal,
         expanded: state.memoryIndicatorExpanded,
         connected: state.connected,
+        showThinking,
+        disableThinking: disableThinkingToggle,
         onToggle: () => {
           state.memoryIndicatorEnabled = !state.memoryIndicatorEnabled;
           state.memoryIndicatorExpanded = false;
@@ -218,6 +204,13 @@ export function renderChatControls(state: AppViewState) {
               memoryEnabled: state.memoryIndicatorEnabled,
             });
           }
+        },
+        onThinkingToggle: () => {
+          if (disableThinkingToggle) return;
+          state.applySettings({
+            ...state.settings,
+            chatShowThinking: !state.settings.chatShowThinking,
+          });
         },
         onExpand: () => {
           state.memoryIndicatorExpanded = !state.memoryIndicatorExpanded;
