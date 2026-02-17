@@ -69,12 +69,14 @@ export async function sendChatMessage(
   if (msg) {
     contentBlocks.push({ type: "text", text: msg });
   }
-  // Add image previews to the message for display
+  // Add attachment previews to the message for display
   if (hasAttachments) {
     for (const att of attachments) {
+      const isImage = att.mimeType.startsWith("image/");
       contentBlocks.push({
-        type: "image",
+        type: isImage ? "image" : "document",
         source: { type: "base64", media_type: att.mimeType, data: att.dataUrl },
+        ...(att.fileName ? { fileName: att.fileName } : {}),
       });
     }
   }
@@ -101,10 +103,12 @@ export async function sendChatMessage(
         .map((att) => {
           const parsed = dataUrlToBase64(att.dataUrl);
           if (!parsed) return null;
+          const isImage = att.mimeType.startsWith("image/");
           return {
-            type: "image",
+            type: isImage ? "image" : "document",
             mimeType: parsed.mimeType,
             content: parsed.content,
+            ...(att.fileName ? { fileName: att.fileName } : {}),
           };
         })
         .filter((a): a is NonNullable<typeof a> => a !== null)

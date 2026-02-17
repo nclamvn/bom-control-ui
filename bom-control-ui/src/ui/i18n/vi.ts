@@ -209,6 +209,9 @@ export const vi = {
     attachmentPreview: "Xem trước tệp đính kèm",
     removeAttachment: "Xóa tệp đính kèm",
     attachImage: "Đính kèm ảnh",
+    attachFile: "Đính kèm tệp",
+    fileTooLarge: "Tệp vượt quá giới hạn 5 MB",
+    unsupportedFileType: "Loại tệp không được hỗ trợ",
 
     // Voice
     stopRecording: "Dừng ghi âm",

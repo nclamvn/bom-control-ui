@@ -208,6 +208,9 @@ export const en = {
     attachmentPreview: "Attachment preview",
     removeAttachment: "Remove attachment",
     attachImage: "Attach image",
+    attachFile: "Attach file",
+    fileTooLarge: "File exceeds 5 MB limit",
+    unsupportedFileType: "Unsupported file type",
 
     // Voice
     stopRecording: "Stop recording",

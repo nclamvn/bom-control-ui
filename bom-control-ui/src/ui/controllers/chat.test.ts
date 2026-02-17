@@ -236,6 +236,63 @@ describe("sendChatMessage", () => {
     expect(state.chatSending).toBe(false);
     expect(state.lastError).toBe(null);
   });
+
+  it("sends document type for PDF attachments", async () => {
+    const req = vi.fn().mockResolvedValue({});
+    const state = createState({ client: mockClient({ request: req }), connected: true });
+    const pdfAttachment = {
+      id: "att-1",
+      dataUrl: "data:application/pdf;base64,AAAA",
+      mimeType: "application/pdf",
+      fileName: "report.pdf",
+    };
+    await sendChatMessage(state, "check this", [pdfAttachment]);
+    expect(req).toHaveBeenCalledTimes(1);
+    const callArgs = req.mock.calls[0];
+    expect(callArgs[0]).toBe("chat.send");
+    const apiAttachments = callArgs[1].attachments;
+    expect(apiAttachments).toHaveLength(1);
+    expect(apiAttachments[0].type).toBe("document");
+    expect(apiAttachments[0].mimeType).toBe("application/pdf");
+    expect(apiAttachments[0].fileName).toBe("report.pdf");
+  });
+
+  it("sends image type for image attachments with fileName", async () => {
+    const req = vi.fn().mockResolvedValue({});
+    const state = createState({ client: mockClient({ request: req }), connected: true });
+    const imgAttachment = {
+      id: "att-2",
+      dataUrl: "data:image/png;base64,AAAA",
+      mimeType: "image/png",
+      fileName: "screenshot.png",
+    };
+    await sendChatMessage(state, "", [imgAttachment]);
+    expect(req).toHaveBeenCalledTimes(1);
+    const callArgs = req.mock.calls[0];
+    const apiAttachments = callArgs[1].attachments;
+    expect(apiAttachments).toHaveLength(1);
+    expect(apiAttachments[0].type).toBe("image");
+    expect(apiAttachments[0].fileName).toBe("screenshot.png");
+  });
+
+  it("includes document content block in chat messages for non-image attachments", async () => {
+    const req = vi.fn().mockResolvedValue({});
+    const state = createState({ client: mockClient({ request: req }), connected: true });
+    const txtAttachment = {
+      id: "att-3",
+      dataUrl: "data:text/plain;base64,SGVsbG8=",
+      mimeType: "text/plain",
+      fileName: "notes.txt",
+    };
+    await sendChatMessage(state, "read this", [txtAttachment]);
+    // Check the user message added to chatMessages
+    const userMsg = state.chatMessages[0] as Record<string, unknown>;
+    const content = userMsg.content as Array<Record<string, unknown>>;
+    expect(content).toHaveLength(2);
+    expect(content[0].type).toBe("text");
+    expect(content[1].type).toBe("document");
+    expect(content[1].fileName).toBe("notes.txt");
+  });
 });
 
 // ─── abortChatRun ────────────────────────────────────────────

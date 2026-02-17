@@ -166,29 +166,32 @@ function renderCompactionIndicator(status: CompactionIndicatorStatus | null | un
   return nothing;
 }
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const ACCEPTED_TYPES = "image/*,.pdf,.txt,.csv,.json,.md";
+
 function generateAttachmentId(): string {
   return `att-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function handlePaste(e: ClipboardEvent, props: ChatProps) {
-  const items = e.clipboardData?.items;
-  if (!items || !props.onAttachmentsChange) return;
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
-  const imageItems: DataTransferItem[] = [];
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (item.type.startsWith("image/")) {
-      imageItems.push(item);
+function isImageMime(mime: string): boolean {
+  return mime.startsWith("image/");
+}
+
+function processFiles(files: FileList | File[], props: ChatProps) {
+  if (!props.onAttachmentsChange) return;
+
+  for (const file of Array.from(files)) {
+    if (file.size > MAX_FILE_SIZE) {
+      props.onAttachmentsChange?.([...(props.attachments ?? [])]);
+      alert(t().chat.fileTooLarge);
+      continue;
     }
-  }
-
-  if (imageItems.length === 0) return;
-
-  e.preventDefault();
-
-  for (const item of imageItems) {
-    const file = item.getAsFile();
-    if (!file) continue;
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -197,6 +200,7 @@ function handlePaste(e: ClipboardEvent, props: ChatProps) {
         id: generateAttachmentId(),
         dataUrl,
         mimeType: file.type,
+        fileName: file.name,
       };
       const current = props.attachments ?? [];
       props.onAttachmentsChange?.([...current, newAttachment]);
@@ -205,20 +209,68 @@ function handlePaste(e: ClipboardEvent, props: ChatProps) {
   }
 }
 
+function handlePaste(e: ClipboardEvent, props: ChatProps) {
+  const items = e.clipboardData?.items;
+  if (!items || !props.onAttachmentsChange) return;
+
+  const fileItems: DataTransferItem[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.kind === "file" && (item.type.startsWith("image/") || item.type === "application/pdf")) {
+      fileItems.push(item);
+    }
+  }
+
+  if (fileItems.length === 0) return;
+
+  e.preventDefault();
+
+  const files: File[] = [];
+  for (const item of fileItems) {
+    const file = item.getAsFile();
+    if (file) files.push(file);
+  }
+  processFiles(files, props);
+}
+
+function truncateFileName(name: string, max = 18): string {
+  if (name.length <= max) return name;
+  const ext = name.lastIndexOf(".");
+  if (ext > 0 && name.length - ext <= 6) {
+    const suffix = name.slice(ext);
+    return name.slice(0, max - suffix.length - 1) + "\u2026" + suffix;
+  }
+  return name.slice(0, max - 1) + "\u2026";
+}
+
 function renderAttachmentPreview(props: ChatProps) {
   const attachments = props.attachments ?? [];
   if (attachments.length === 0) return nothing;
 
   return html`
     <div class="chat-attachments">
-      ${attachments.map(
-        (att) => html`
-          <div class="chat-attachment">
-            <img
-              src=${att.dataUrl}
-              alt="${t().chat.attachmentPreview}"
-              class="chat-attachment__img"
-            />
+      ${attachments.map((att) => {
+        const isImage = isImageMime(att.mimeType);
+        // Estimate raw size from base64 data URL
+        const base64Start = att.dataUrl.indexOf(",");
+        const base64Len = base64Start > 0 ? att.dataUrl.length - base64Start - 1 : 0;
+        const fileSize = Math.round((base64Len * 3) / 4);
+
+        return html`
+          <div class="chat-attachment ${isImage ? "" : "chat-attachment--file"}">
+            ${isImage
+              ? html`<img
+                  src=${att.dataUrl}
+                  alt="${t().chat.attachmentPreview}"
+                  class="chat-attachment__img"
+                />`
+              : html`
+                  <div class="chat-attachment__file-info">
+                    <span class="chat-attachment__file-icon">${icons.fileText}</span>
+                    <span class="chat-attachment__file-name">${truncateFileName(att.fileName ?? "file")}</span>
+                    <span class="chat-attachment__file-size">${formatFileSize(fileSize)}</span>
+                  </div>
+                `}
             <button
               class="chat-attachment__remove"
               type="button"
@@ -231,8 +283,8 @@ function renderAttachmentPreview(props: ChatProps) {
               ${icons.x}
             </button>
           </div>
-        `,
-      )}
+        `;
+      })}
     </div>
   `;
 }
@@ -758,7 +810,24 @@ export function renderChat(props: ChatProps) {
 
           ${renderApiKeyBanner(props)}
 
-          <div class="chat-composer claude-style">
+          <div
+            class="chat-composer claude-style"
+            @dragover=${(e: DragEvent) => {
+              e.preventDefault();
+              (e.currentTarget as HTMLElement).classList.add("chat-composer--dragover");
+            }}
+            @dragleave=${(e: DragEvent) => {
+              (e.currentTarget as HTMLElement).classList.remove("chat-composer--dragover");
+            }}
+            @drop=${(e: DragEvent) => {
+              e.preventDefault();
+              (e.currentTarget as HTMLElement).classList.remove("chat-composer--dragover");
+              const files = e.dataTransfer?.files;
+              if (files && files.length > 0) {
+                processFiles(files, props);
+              }
+            }}
+          >
         ${renderAttachmentPreview(props)}
 
         ${props.voiceInterimTranscript ? html`
@@ -793,36 +862,21 @@ export function renderChat(props: ChatProps) {
               <input
                 type="file"
                 ${ref(fileInputRef)}
-                accept="image/*"
+                accept=${ACCEPTED_TYPES}
                 multiple
                 style="display: none"
                 @change=${(e: Event) => {
                   const input = e.target as HTMLInputElement;
                   const files = input.files;
                   if (!files || !props.onAttachmentsChange) return;
-
-                  for (const file of Array.from(files)) {
-                    if (!file.type.startsWith("image/")) continue;
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      const dataUrl = reader.result as string;
-                      const newAttachment: ChatAttachment = {
-                        id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-                        dataUrl,
-                        mimeType: file.type,
-                      };
-                      const current = props.attachments ?? [];
-                      props.onAttachmentsChange?.([...current, newAttachment]);
-                    };
-                    reader.readAsDataURL(file);
-                  }
+                  processFiles(files, props);
                   input.value = '';
                 }}
               />
               <button
                 class="composer-icon-btn"
                 type="button"
-                title="${t().chat.attachImage}"
+                title="${t().chat.attachFile}"
                 ?disabled=${!props.connected}
                 @click=${() => {
                   fileInputRef.value?.click();
