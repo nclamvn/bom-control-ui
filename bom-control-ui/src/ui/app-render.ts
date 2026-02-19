@@ -120,6 +120,12 @@ import {
   scanProject,
 } from "./controllers/projects";
 import {
+  loadEldercare,
+  EMPTY_SUMMARY,
+  EMPTY_ROOM,
+} from "./controllers/eldercare";
+import type { EldercareConfigSection } from "./views/eldercare-config";
+import {
   deployProject,
   loadDeployHistory,
   loadPreviews,
@@ -1091,6 +1097,47 @@ export function renderApp(state: AppViewState) {
                 onOpenPreview: (url) => (state.previewIframeUrl = url),
                 onCopyUrl: (url) => {
                   navigator.clipboard.writeText(url).catch(() => {});
+                },
+              }))
+            : nothing
+        }
+
+        ${
+          state.tab === "eldercare"
+            ? lazyView("eldercare", () => import("./views/eldercare-dashboard"), (m) => m.renderEldercareDashboard({
+                connected: state.connected,
+                loading: state.eldercareLoading,
+                error: state.eldercareError,
+                haConnected: state.eldercareHaConnected,
+                room: state.eldercareRoom,
+                summary: state.eldercareSummary,
+                lastCheck: state.eldercareLastCheck,
+                sosActive: state.eldercareSosActive,
+                onRefresh: () => loadEldercare(state),
+              }))
+            : nothing
+        }
+
+        ${
+          state.tab === "eldercare-config"
+            ? lazyView("eldercare-config", () => import("./views/eldercare-config"), (m) => m.renderEldercareConfig({
+                connected: state.connected,
+                loading: state.eldercareConfigLoading,
+                saving: state.eldercareConfigSaving,
+                error: state.eldercareConfigError,
+                activeSection: state.eldercareConfigSection,
+                monitorConfig: state.eldercareMonitorConfig,
+                sosContacts: state.eldercareSosContacts,
+                companionConfig: state.eldercareCompanionConfig,
+                videocallConfig: state.eldercareVideocallConfig,
+                haEntities: state.eldercareHaEntities,
+                onSave: () => void state.handleEldercareSaveConfig(),
+                onRefresh: () => void state.handleEldercareLoadConfig(),
+                onSectionChange: (section: EldercareConfigSection) => {
+                  state.eldercareConfigSection = section;
+                },
+                onConfigChange: (section: string, path: string[], value: unknown) => {
+                  state.handleEldercareConfigChange(section, path, value);
                 },
               }))
             : nothing

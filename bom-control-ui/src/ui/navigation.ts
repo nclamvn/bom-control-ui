@@ -24,6 +24,13 @@ export const TAB_GROUPS = [
     icon: "rocket",
     shortcut: "3"
   },
+  {
+    label: "eldercare",
+    labelKey: "eldercare",
+    tabs: ["eldercare", "eldercare-config"],
+    icon: "activity",
+    shortcut: "4"
+  },
 ] as const;
 
 export function getTabGroupLabel(group: (typeof TAB_GROUPS)[number]): string {
@@ -35,6 +42,8 @@ export function getTabGroupLabel(group: (typeof TAB_GROUPS)[number]): string {
       return (translations.nav as Record<string, string>).admin ?? "Admin";
     case "deployGroup":
       return (translations.nav as Record<string, string>).deployGroup ?? "Deploy";
+    case "eldercare":
+      return (translations.nav as Record<string, string>).eldercare ?? "Eldercare";
     // Legacy fallbacks
     case "conversations":
       return translations.nav.conversations ?? "CONVERSATIONS";
@@ -68,7 +77,9 @@ export type Tab =
   | "logs"
   | "projects"
   | "deploy"
-  | "preview";
+  | "preview"
+  | "eldercare"
+  | "eldercare-config";
 
 const TAB_PATHS: Record<Tab, string> = {
   overview: "/overview",
@@ -86,6 +97,8 @@ const TAB_PATHS: Record<Tab, string> = {
   projects: "/projects",
   deploy: "/deploy",
   preview: "/preview",
+  eldercare: "/eldercare",
+  "eldercare-config": "/eldercare-config",
 };
 
 const PATH_TO_TAB = new Map(Object.entries(TAB_PATHS).map(([tab, path]) => [path, tab as Tab]));
@@ -181,6 +194,10 @@ export function iconForTab(tab: Tab): IconName {
       return "rocket";
     case "preview":
       return "globe";
+    case "eldercare":
+      return "activity";
+    case "eldercare-config":
+      return "settings";
     default:
       return "folder";
   }
@@ -219,6 +236,10 @@ export function titleForTab(tab: Tab) {
       return translations.nav.deploy;
     case "preview":
       return translations.nav.preview;
+    case "eldercare":
+      return (translations.nav as Record<string, string>).eldercare ?? "Eldercare";
+    case "eldercare-config":
+      return (translations.nav as Record<string, string>).eldercareConfig ?? "Eldercare Config";
     default:
       return translations.nav.control;
   }
@@ -257,6 +278,10 @@ export function subtitleForTab(tab: Tab) {
       return subtitles.deploy;
     case "preview":
       return subtitles.preview;
+    case "eldercare":
+      return (subtitles as Record<string, string>).eldercare ?? "";
+    case "eldercare-config":
+      return (subtitles as Record<string, string>).eldercareConfig ?? "";
     default:
       return "";
   }

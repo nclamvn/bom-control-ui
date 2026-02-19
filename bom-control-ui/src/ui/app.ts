@@ -335,6 +335,31 @@ export class OpenClawApp extends LitElement {
   @state() previewBranch = "";
   @state() previewIframeUrl: string | null = null;
 
+  // Eldercare dashboard state
+  @state() eldercareLoading = false;
+  @state() eldercareError: string | null = null;
+  @state() eldercareHaConnected = false;
+  @state() eldercareRoom: import("./controllers/eldercare").EldercareRoomData = { temperature: null, humidity: null, motionMinutes: null, presence: null };
+  @state() eldercareSummary: import("./controllers/eldercare").EldercareDailySummary = { checksToday: 0, alertsToday: 0, highestLevel: "normal", callsToday: [], musicPlayed: 0, remindersDelivered: 0, storyActive: false, sosEvents: [], lastReport: null, lastReportDate: null };
+  @state() eldercareLastCheck: import("./controllers/eldercare").EldercareCheck | null = null;
+  @state() eldercareSosActive = false;
+
+  // Eldercare config state
+  @state() eldercareConfigLoading = false;
+  @state() eldercareConfigSaving = false;
+  @state() eldercareConfigError: string | null = null;
+  @state() eldercareConfigSection: import("./views/eldercare-config").EldercareConfigSection = "monitor";
+  @state() eldercareMonitorConfig: Record<string, unknown> | null = null;
+  @state() eldercareSosContacts: import("./views/eldercare-config").EldercareContact[] = [];
+  @state() eldercareCompanionConfig: Record<string, unknown> | null = null;
+  @state() eldercareVideocallConfig: Record<string, unknown> | null = null;
+  @state() eldercareHaEntities: Record<string, string> = {
+    presence: "binary_sensor.grandma_room_presence",
+    temperature: "sensor.grandma_room_temperature",
+    humidity: "sensor.grandma_room_humidity",
+    motion: "sensor.grandma_room_motion_minutes",
+  };
+
   // Memory indicator (chat header)
   @state() memoryIndicatorEnabled = true;
   @state() memoryIndicatorFacts: UserFact[] = [];
@@ -714,6 +739,94 @@ export class OpenClawApp extends LitElement {
 
   async handlePromotePreview(previewId: string) {
     await promotePreviewInternal(this, previewId);
+  }
+
+  // Eldercare handlers
+  async handleEldercareLoadConfig() {
+    if (!this.client || !this.connected) return;
+    this.eldercareConfigLoading = true;
+    this.eldercareConfigError = null;
+    try {
+      // Load config files from memory
+      const res = (await this.client.request("memory.search", {
+        query: "eldercare_config",
+        limit: 20,
+      })) as Array<{ id: string; content: string }> | undefined;
+      const facts = Array.isArray(res) ? res : [];
+      for (const fact of facts) {
+        try {
+          const data = JSON.parse(fact.content);
+          if (fact.id === "eldercare_monitor_config") this.eldercareMonitorConfig = data;
+          if (fact.id === "eldercare_companion_config") this.eldercareCompanionConfig = data;
+          if (fact.id === "eldercare_videocall_config") this.eldercareVideocallConfig = data;
+          if (fact.id === "eldercare_contacts") {
+            this.eldercareSosContacts = Array.isArray(data) ? data : [];
+          }
+        } catch {
+          // skip
+        }
+      }
+    } catch (err) {
+      this.eldercareConfigError = String(err);
+    } finally {
+      this.eldercareConfigLoading = false;
+    }
+  }
+
+  async handleEldercareSaveConfig() {
+    if (!this.client || !this.connected) return;
+    this.eldercareConfigSaving = true;
+    this.eldercareConfigError = null;
+    try {
+      if (this.eldercareMonitorConfig) {
+        await this.client.request("memory.upsert", {
+          key: "eldercare_monitor_config",
+          content: JSON.stringify(this.eldercareMonitorConfig),
+        });
+      }
+      if (this.eldercareCompanionConfig) {
+        await this.client.request("memory.upsert", {
+          key: "eldercare_companion_config",
+          content: JSON.stringify(this.eldercareCompanionConfig),
+        });
+      }
+      if (this.eldercareVideocallConfig) {
+        await this.client.request("memory.upsert", {
+          key: "eldercare_videocall_config",
+          content: JSON.stringify(this.eldercareVideocallConfig),
+        });
+      }
+    } catch (err) {
+      this.eldercareConfigError = String(err);
+    } finally {
+      this.eldercareConfigSaving = false;
+    }
+  }
+
+  handleEldercareConfigChange(section: string, path: string[], value: unknown) {
+    const setNested = (obj: Record<string, unknown>, keys: string[], val: unknown) => {
+      const clone = { ...obj };
+      let current: Record<string, unknown> = clone;
+      for (let i = 0; i < keys.length - 1; i++) {
+        const k = keys[i];
+        current[k] = { ...(current[k] as Record<string, unknown> ?? {}) };
+        current = current[k] as Record<string, unknown>;
+      }
+      current[keys[keys.length - 1]] = val;
+      return clone;
+    };
+
+    switch (section) {
+      case "monitor":
+        this.eldercareMonitorConfig = setNested(this.eldercareMonitorConfig ?? {}, path, value);
+        break;
+      case "companion":
+        this.eldercareCompanionConfig = setNested(this.eldercareCompanionConfig ?? {}, path, value);
+        break;
+      case "videocall":
+        this.eldercareVideocallConfig = setNested(this.eldercareVideocallConfig ?? {}, path, value);
+        break;
+    }
   }
 
   render() {
