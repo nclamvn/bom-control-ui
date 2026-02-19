@@ -796,6 +796,12 @@ export class OpenClawApp extends LitElement {
           content: JSON.stringify(this.eldercareVideocallConfig),
         });
       }
+      if (this.eldercareSosContacts.length > 0) {
+        await this.client.request("memory.upsert", {
+          key: "eldercare_contacts",
+          content: JSON.stringify(this.eldercareSosContacts),
+        });
+      }
     } catch (err) {
       this.eldercareConfigError = String(err);
     } finally {
